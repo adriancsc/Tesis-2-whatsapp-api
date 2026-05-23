@@ -1,0 +1,27 @@
+# Core Framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+pydantic-settings==2.1.0
+python-dotenv==1.0.0
+
+# Database
+sqlalchemy==2.0.23
+pyodbc==5.0.1
+alembic==1.12.1
+
+# WhatsApp Business API
+requests==2.31.0
+python-multipart==0.0.6
+
+# NLU (Natural Language Understanding)
+spacy==3.7.2
+google-generativeai==0.3.2
+
+# Utilities
+python-dateutil==2.8.2
+websockets==12.0
+
+# Optional: Redis for sessions (comment out if not using)
+# redis==5.0.1
+# hiredis==2.2.3

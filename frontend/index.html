@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAS-CIS Dashboard | Sistema de Inventario Multiagente</title>
+    <meta name="description" content="Dashboard de administración del Sistema MAS-CIS">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <h1>🤖 MAS-CIS</h1>
+                <p>Sistema Multiagente de Inventario</p>
+            </div>
+            <div class="header-status">
+                <div class="status-indicator" id="systemStatus">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Conectando...</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Stats Cards -->
+        <section class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">📦</div>
+                <div class="stat-content">
+                    <h3 id="totalProducts">0</h3>
+                    <p>Total Productos</p>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-content">
+                    <h3 id="totalStock">0</h3>
+                    <p>Stock Total</p>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">⚠️</div>
+                <div class="stat-content">
+                    <h3 id="lowStock">0</h3>
+                    <p>Stock Bajo</p>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">🔄</div>
+                <div class="stat-content">
+                    <h3 id="transactionsToday">0</h3>
+                    <p>Transacciones Hoy</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Agents Status -->
+        <section class="section">
+            <h2 class="section-title">🤖 Estado de Agentes</h2>
+            <div class="agents-grid" id="agentsGrid">
+                <!-- Agentes se cargarán dinámicamente -->
+            </div>
+        </section>
+
+        <!-- Inventory Table -->
+        <section class="section">
+            <div class="section-header">
+                <h2 class="section-title">📦 Inventario en Tiempo Real</h2>
+                <button class="btn-refresh" id="btnRefresh">🔄 Actualizar</button>
+            </div>
+            
+            <div class="table-container">
+                <table class="inventory-table">
+                    <thead>
+                        <tr>
+                            <th>SKU</th>
+                            <th>Producto</th>
+                            <th>Categoría</th>
+                            <th>Precio</th>
+                            <th>Stock Físico</th>
+                            <th>Stock Virtual</th>
+                            <th>Stock Total</th>
+                            <th>Última Actualización</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventoryTableBody">
+                        <!-- Productos se cargarán dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Activity Log -->
+        <section class="section">
+            <h2 class="section-title">📋 Registro de Actividad</h2>
+            <div class="activity-log" id="activityLog">
+                <div class="activity-item">
+                    <span class="activity-time">Esperando actividad...</span>
+                    <span class="activity-message">El sistema está listo para recibir operaciones</span>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>Sistema MAS-CIS v1.0.0 | Prototipo de Tesis | 2025</p>
+    </footer>
+
+    <script src="js/app.js"></script>
+</body>
+</html>

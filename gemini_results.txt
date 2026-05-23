@@ -1,0 +1,20 @@
+📦 Google Generative AI Version: 0.8.5
+🔑 Gemini API Key configured: Yes
+🤖 Gemini Model: gemini-2.0-flash
+
+🧪 Testing Gemini NLU...
+
+📝 Input: 'Hola'
+✅ Result: Action=unknown, Confidence=0.0
+   Details: ParsedCommand(action='unknown', product_name=None, product_sku=None, quantity=None, size=None, color=None, price=None, confidence=0.0, raw_text='Hola')
+--------------------
+
+📝 Input: 'quiero ver saber el inventario de productos'
+✅ Result: Action=query, Confidence=0.85
+   Details: ParsedCommand(action='query', product_name=None, product_sku=None, quantity=None, size=None, color=None, price=None, confidence=0.85, raw_text='quiero ver saber el inventario de productos')
+--------------------
+
+📝 Input: 'Vendí 3 polos blancos talla M'
+✅ Result: Action=sell, Confidence=0.85
+   Details: ParsedCommand(action='sell', product_name='Polo Blanco', product_sku=None, quantity=3, size='M', color='Blanco', price=None, confidence=0.85, raw_text='Vendí 3 polos blancos talla M')
+--------------------

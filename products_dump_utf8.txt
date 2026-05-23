@@ -1,0 +1,53 @@
+📋 Checking Product Table...
+ID: 1 | Name: 'Polo Blanco' | SKU: 'POLO-BLANCO' | Color: Blanco
+ID: 2 | Name: 'Polo Negro' | SKU: 'POLO-NEGRO' | Color: Negro
+ID: 3 | Name: 'Polo Azul' | SKU: 'POLO-AZUL' | Color: Azul
+ID: 4 | Name: 'Jean Azul' | SKU: 'JEAN-AZUL' | Color: Azul
+ID: 5 | Name: 'Pantalón Negro' | SKU: 'PANTALON-NEGRO' | Color: Negro
+ID: 6 | Name: 'Pantalón Beige' | SKU: 'PANTALON-BEIGE' | Color: Beige
+ID: 7 | Name: 'Camisa Blanca' | SKU: 'CAMISA-BLANCA' | Color: Blanco
+ID: 8 | Name: 'Camisa Celeste' | SKU: 'CAMISA-CELESTE' | Color: Celeste
+ID: 9 | Name: 'Gorra Negra' | SKU: 'GORRA-NEGRA' | Color: Negro
+ID: 10 | Name: 'Correa Marrón 95cm' | SKU: 'CORREA-MARRON' | Color: Marrón
+
+📋 Checking ProductVariant Table...
+ID: 1 | SKU: 'POLO-BLANCO-S' | Size: 'S' | Parent: 1
+ID: 2 | SKU: 'POLO-BLANCO-M' | Size: 'M' | Parent: 1
+ID: 3 | SKU: 'POLO-BLANCO-L' | Size: 'L' | Parent: 1
+ID: 4 | SKU: 'POLO-BLANCO-XL' | Size: 'XL' | Parent: 1
+ID: 5 | SKU: 'POLO-BLANCO-2XL' | Size: '2XL' | Parent: 1
+ID: 6 | SKU: 'POLO-NEGRO-S' | Size: 'S' | Parent: 2
+ID: 7 | SKU: 'POLO-NEGRO-M' | Size: 'M' | Parent: 2
+ID: 8 | SKU: 'POLO-NEGRO-L' | Size: 'L' | Parent: 2
+ID: 9 | SKU: 'POLO-NEGRO-XL' | Size: 'XL' | Parent: 2
+ID: 10 | SKU: 'POLO-NEGRO-2XL' | Size: '2XL' | Parent: 2
+ID: 11 | SKU: 'POLO-AZUL-S' | Size: 'S' | Parent: 3
+ID: 12 | SKU: 'POLO-AZUL-M' | Size: 'M' | Parent: 3
+ID: 13 | SKU: 'POLO-AZUL-L' | Size: 'L' | Parent: 3
+ID: 14 | SKU: 'POLO-AZUL-XL' | Size: 'XL' | Parent: 3
+ID: 15 | SKU: 'POLO-AZUL-2XL' | Size: '2XL' | Parent: 3
+ID: 16 | SKU: 'JEAN-AZUL-28' | Size: '28' | Parent: 4
+ID: 17 | SKU: 'JEAN-AZUL-30' | Size: '30' | Parent: 4
+ID: 18 | SKU: 'JEAN-AZUL-32' | Size: '32' | Parent: 4
+ID: 19 | SKU: 'JEAN-AZUL-34' | Size: '34' | Parent: 4
+ID: 20 | SKU: 'JEAN-AZUL-36' | Size: '36' | Parent: 4
+ID: 21 | SKU: 'PANTALON-NEGRO-28' | Size: '28' | Parent: 5
+ID: 22 | SKU: 'PANTALON-NEGRO-30' | Size: '30' | Parent: 5
+ID: 23 | SKU: 'PANTALON-NEGRO-32' | Size: '32' | Parent: 5
+ID: 24 | SKU: 'PANTALON-NEGRO-34' | Size: '34' | Parent: 5
+ID: 25 | SKU: 'PANTALON-NEGRO-36' | Size: '36' | Parent: 5
+ID: 26 | SKU: 'PANTALON-BEIGE-28' | Size: '28' | Parent: 6
+ID: 27 | SKU: 'PANTALON-BEIGE-30' | Size: '30' | Parent: 6
+ID: 28 | SKU: 'PANTALON-BEIGE-32' | Size: '32' | Parent: 6
+ID: 29 | SKU: 'PANTALON-BEIGE-34' | Size: '34' | Parent: 6
+ID: 30 | SKU: 'CAMISA-BLANCA-S' | Size: 'S' | Parent: 7
+ID: 31 | SKU: 'CAMISA-BLANCA-M' | Size: 'M' | Parent: 7
+ID: 32 | SKU: 'CAMISA-BLANCA-L' | Size: 'L' | Parent: 7
+ID: 33 | SKU: 'CAMISA-BLANCA-XL' | Size: 'XL' | Parent: 7
+ID: 34 | SKU: 'CAMISA-BLANCA-2XL' | Size: '2XL' | Parent: 7
+ID: 35 | SKU: 'CAMISA-CELESTE-S' | Size: 'S' | Parent: 8
+ID: 36 | SKU: 'CAMISA-CELESTE-M' | Size: 'M' | Parent: 8
+ID: 37 | SKU: 'CAMISA-CELESTE-L' | Size: 'L' | Parent: 8
+ID: 38 | SKU: 'CAMISA-CELESTE-XL' | Size: 'XL' | Parent: 8
+ID: 39 | SKU: 'GORRA-NEGRA-UNICA' | Size: 'UNICA' | Parent: 9
+ID: 40 | SKU: 'CORREA-MARRON-95' | Size: '95' | Parent: 10

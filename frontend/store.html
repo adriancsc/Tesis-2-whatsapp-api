@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gamarra Store | Ropa de Calidad</title>
+    <meta name="description" content="Tienda online de ropa - Los mejores precios de Gamarra">
+    <link rel="stylesheet" href="/static/css/store.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="container-fluid">
+            <p>🚚 ENVÍOS A LIMA Y PROVINCIAS - Compra segura con Gamarra GO</p>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="main-header">
+        <div class="container-fluid">
+            <div class="header-content">
+                <div class="logo">
+                    <h1>🛍️ GAMARRA</h1>
+                    <p>Store Online</p>
+                </div>
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="Buscar productos...">
+                    <button class="btn-search">🔍</button>
+                </div>
+                <div class="header-actions">
+                    <button class="btn-refresh" id="btnRefreshStore">
+                        🔄 Actualizar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="main-nav">
+        <div class="container-fluid">
+            <a href="#" class="nav-link active" data-category="all">COMPRA ONLINE</a>
+            <a href="#" class="nav-link" data-category="Polos">POLOS</a>
+            <a href="#" class="nav-link" data-category="Pantalones">PANTALONES</a>
+            <a href="#" class="nav-link" data-category="Camisas">CAMISAS</a>
+            <a href="#" class="nav-link" data-category="Accesorios">ACCESORIOS</a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container-fluid">
+            <!-- Breadcrumb -->
+            <div class="breadcrumb">
+                <span>Inicio</span> / <span id="currentCategory">Todos los productos</span>
+            </div>
+
+            <!-- Products Header -->
+            <div class="products-header">
+                <h2>COMPRA EN LÍNEA</h2>
+                <div class="products-info">
+                    <span class="products-count"><span id="productsCount">0</span> PRODUCTOS</span>
+                    <div class="view-options">
+                        <button class="view-btn active" data-view="grid">⊞</button>
+                        <button class="view-btn" data-view="list">☰</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Products Grid -->
+            <div class="products-container">
+                <div class="products-grid" id="productsGrid">
+                    <!-- Loading State -->
+                    <div class="loading-state">
+                        <div class="spinner"></div>
+                        <p>Cargando productos...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div class="empty-state" id="emptyState" style="display: none;">
+                <div class="empty-icon">📦</div>
+                <h3>No hay productos disponibles</h3>
+                <p>Intenta con otra categoría</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="container-fluid">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>🛍️ GAMARRA Store</h3>
+                    <p>Sistema de inventario inteligente con sincronización en tiempo real</p>
+                    <p class="footer-tech">🚀 Tecnología MAS (Multi-Agent System)</p>
+                </div>
+                <div class="footer-section">
+                    <h4>INFORMACIÓN</h4>
+                    <ul>
+                        <li>✅ Stock actualizado en vivo</li>
+                        <li>🚚 Envíos a todo el Perú</li>
+                        <li>💳 Pagos seguros</li>
+                        <li>📱 WhatsApp: Disponible</li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>CONTACTO</h4>
+                    <p>📍 Gamarra, Lima - Perú</p>
+                    <p>📧 ventas@gamarrastore.pe</p>
+                    <p>📱 WhatsApp: +51 999 999 999</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2025 Gamarra Store | Todos los derechos reservados | Prototipo de Tesis MAS-CIS</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/static/js/store.js"></script>
+</body>
+
+</html>

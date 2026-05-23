@@ -1,0 +1,354 @@
+﻿2025-12-10 05:11:21 | src.agents.nlu_processor | [32mINFO[0m | ✅ Modelo spaCy cargado exitosamente
+python : C:\Users\a
+dria\anaconda3\lib\
+site-packages\googl
+e\api_core\_python_
+version_support.py:
+252: 
+FutureWarning: You 
+are using a Python 
+version (3.9.12) 
+past its end of 
+life. Google will 
+update 
+google.api_core 
+with critical bug 
+fixes on a 
+best-effort basis, 
+but not with any 
+other fixes or 
+features. Please 
+upgrade to the 
+latest Python 
+version, or at 
+least Python 3.10, 
+and then update 
+google.api_core.
+En línea: 1 
+Carácter: 1
++ python test_store
+_agent.py 2>&1 | 
+Out-File -FilePath 
+test_output.txt  
+...
++ ~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~
+    + CategoryInfo 
+             : No  
+  tSpecified: (C   
+ :\Users\adria\    
+...oogle.api_c    
+ore.:String) [    
+], RemoteExcep    
+tion
+    + FullyQualifi 
+   edErrorId : Na  
+  tiveCommandErr   
+ or
+ 
+  warnings.warn(mes
+sage, 
+FutureWarning)
+An error occurred: module 'importlib.metadata' has no attribute 'packages_distributions'
+DEBUG: Connecting to sqlite:///./mas_cis.db
+2025-12-10 05:11:26 | src.database.connection | [32mINFO[0m | ✅ Conexión a SQL Server configurada: localhost/mas_cis.db
+2025-12-10 05:11:26 | store.store_agent_01 | [32mINFO[0m | 🤖 Agente store inicializado: store_agent_01
+2025-12-10 05:11:26 | coordinator.coordinator_agent_01 | [32mINFO[0m | 🤖 Agente coordinator inicializado: coordinator_agent_01
+=== Testing Store Agent Flow ===
+
+1. Testing NLU with: 'Vendí 3 polos blancos talla M'
+2025-12-10 05:11:27 | src.agents.gemini_nlu | [31mERROR[0m | Error en Gemini NLU: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 0, model: gemini-2.0-flash
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash
+Please retry in 14.003191888s. [links {
+  description: "Learn more about Gemini API quotas"
+  url: "https://ai.google.dev/gemini-api/docs/rate-limits"
+}
+, violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_input_token_count"
+  quota_id: "GenerateContentInputTokensPerModelPerMinute-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.0-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+}
+violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerMinutePerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.0-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+}
+violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerDayPerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.0-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+}
+, retry_delay {
+  seconds: 14
+}
+]
+Traceback (most recent call last):
+  File "C:\Prototipo Tesis 1\src\agents\gemini_nlu.py", line 110, in parse
+    response = self.model.generate_content(prompt)
+  File "C:\Users\adria\anaconda3\lib\site-packages\google\generativeai\generative_models.py", line 331, in generate_content
+    response = self._client.generate_content(
+  File "C:\Users\adria\anaconda3\lib\site-packages\google\ai\generativelanguage_v1beta\services\generative_service\client.py", line 835, in generate_content
+    response = rpc(
+  File "C:\Users\adria\anaconda3\lib\site-packages\google\api_core\gapic_v1\method.py", line 131, in __call__
+    return wrapped_func(*args, **kwargs)
+  File "C:\Users\adria\anaconda3\lib\site-packages\google\api_core\retry\retry_unary.py", line 294, in retry_wrapped_func
+    return retry_target(
+  File "C:\Users\adria\anaconda3\lib\site-packages\google\api_core\retry\retry_unary.py", line 156, in retry_target
+    next_sleep = _retry_error_helper(
+  File "C:\Users\adria\anaconda3\lib\site-packages\google\api_core\retry\retry_base.py", line 214, in _retry_error_helper
+    raise final_exc from source_exc
+  File "C:\Users\adria\anaconda3\lib\site-packages\google\api_core\retry\retry_unary.py", line 147, in retry_target
+    result = target()
+  File "C:\Users\adria\anaconda3\lib\site-packages\google\api_core\timeout.py", line 130, in func_with_timeout
+    return func(*args, **kwargs)
+  File "C:\Users\adria\anaconda3\lib\site-packages\google\api_core\grpc_helpers.py", line 77, in error_remapped_callable
+    raise exceptions.from_grpc_error(exc) from exc
+google.api_core.exceptions.ResourceExhausted: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 0, model: gemini-2.0-flash
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash
+Please retry in 14.003191888s. [links {
+  description: "Learn more about Gemini API quotas"
+  url: "https://ai.google.dev/gemini-api/docs/rate-limits"
+}
+, violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_input_token_count"
+  quota_id: "GenerateContentInputTokensPerModelPerMinute-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.0-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+}
+violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerMinutePerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.0-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+}
+violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerDayPerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.0-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+}
+, retry_delay {
+  seconds: 14
+}
+]
+   Parsed: ParsedCommand(action='sell', product_name='Polo Blanco', product_sku=None, quantity=3, size='M', color='Blanco', price=None, confidence=0.85, raw_text='Vendí 3 polos blancos talla M')
+   Action: sell
+   Product: Polo Blanco
+   Color: Blanco
+   Size: M
+   Quantity: 3
+   Confidence: 0.85
+
+2. Testing Store Agent processing...
+2025-12-10 05:11:27 | store.test_agent | [32mINFO[0m | 🤖 Agente store inicializado: test_agent
+2025-12-10 05:11:27 | store.test_agent | [32mINFO[0m | 📊 Actividad: message_received
+2025-12-10 05:11:27,536 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2025-12-10 05:11:27,545 INFO sqlalchemy.engine.Engine SELECT chat_sessions.id AS chat_sessions_id, chat_sessions.session_id AS chat_sessions_session_id, chat_sessions.vendor_phone AS chat_sessions_vendor_phone, chat_sessions.vendor_name AS chat_sessions_vendor_name, chat_sessions.status AS chat_sessions_status, chat_sessions.context_data AS chat_sessions_context_data, chat_sessions.last_message_at AS chat_sessions_last_message_at, chat_sessions.created_at AS chat_sessions_created_at, chat_sessions.expires_at AS chat_sessions_expires_at 
+FROM chat_sessions 
+WHERE chat_sessions.session_id = ?
+ LIMIT ? OFFSET ?
+2025-12-10 05:11:27,545 INFO sqlalchemy.engine.Engine [generated in 0.00042s] ('session_None_20251210', 1, 0)
+2025-12-10 05:11:27,555 INFO sqlalchemy.engine.Engine INSERT INTO chat_sessions (session_id, vendor_phone, vendor_name, status, context_data, last_message_at, created_at, expires_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+2025-12-10 05:11:27,555 INFO sqlalchemy.engine.Engine [generated in 0.00057s] ('session_None_20251210', None, None, 'active', None, '2025-12-10 10:11:27.555857', '2025-12-10 10:11:27.555857', '2025-12-10 10:16:27.550017')
+2025-12-10 05:11:27,558 INFO sqlalchemy.engine.Engine ROLLBACK
+2025-12-10 05:11:27 | src.database.connection | [31mERROR[0m | Error en transacción de base de datos: (sqlite3.IntegrityError) NOT NULL constraint failed: chat_sessions.vendor_phone
+[SQL: INSERT INTO chat_sessions (session_id, vendor_phone, vendor_name, status, context_data, last_message_at, created_at, expires_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: ('session_None_20251210', None, None, 'active', None, '2025-12-10 10:11:27.555857', '2025-12-10 10:11:27.555857', '2025-12-10 10:16:27.550017')]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2025-12-10 05:11:27 | store.test_agent | [31mERROR[0m | Error gestionando sesión: (sqlite3.IntegrityError) NOT NULL constraint failed: chat_sessions.vendor_phone
+[SQL: INSERT INTO chat_sessions (session_id, vendor_phone, vendor_name, status, context_data, last_message_at, created_at, expires_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: ('session_None_20251210', None, None, 'active', None, '2025-12-10 10:11:27.555857', '2025-12-10 10:11:27.555857', '2025-12-10 10:16:27.550017')]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2025-12-10 05:11:27 | src.agents.gemini_nlu | [31mERROR[0m | Error en Gemini NLU: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 0, model: gemini-2.0-flash
+Please retry in 13.634496661s. [links {
+  description: "Learn more about Gemini API quotas"
+  url: "https://ai.google.dev/gemini-api/docs/rate-limits"
+}
+, violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerDayPerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.0-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+}
+violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerMinutePerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.0-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+}
+violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_input_token_count"
+  quota_id: "GenerateContentInputTokensPerModelPerMinute-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.0-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+}
+, retry_delay {
+  seconds: 13
+}
+]
+Traceback (most recent call last):
+  File "C:\Prototipo Tesis 1\src\agents\gemini_nlu.py", line 110, in parse
+    response = self.model.generate_content(prompt)
+  File "C:\Users\adria\anaconda3\lib\site-packages\google\generativeai\generative_models.py", line 331, in generate_content
+    response = self._client.generate_content(
+  File "C:\Users\adria\anaconda3\lib\site-packages\google\ai\generativelanguage_v1beta\services\generative_service\client.py", line 835, in generate_content
+    response = rpc(
+  File "C:\Users\adria\anaconda3\lib\site-packages\google\api_core\gapic_v1\method.py", line 131, in __call__
+    return wrapped_func(*args, **kwargs)
+  File "C:\Users\adria\anaconda3\lib\site-packages\google\api_core\retry\retry_unary.py", line 294, in retry_wrapped_func
+    return retry_target(
+  File "C:\Users\adria\anaconda3\lib\site-packages\google\api_core\retry\retry_unary.py", line 156, in retry_target
+    next_sleep = _retry_error_helper(
+  File "C:\Users\adria\anaconda3\lib\site-packages\google\api_core\retry\retry_base.py", line 214, in _retry_error_helper
+    raise final_exc from source_exc
+  File "C:\Users\adria\anaconda3\lib\site-packages\google\api_core\retry\retry_unary.py", line 147, in retry_target
+    result = target()
+  File "C:\Users\adria\anaconda3\lib\site-packages\google\api_core\timeout.py", line 130, in func_with_timeout
+    return func(*args, **kwargs)
+  File "C:\Users\adria\anaconda3\lib\site-packages\google\api_core\grpc_helpers.py", line 77, in error_remapped_callable
+    raise exceptions.from_grpc_error(exc) from exc
+google.api_core.exceptions.ResourceExhausted: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 0, model: gemini-2.0-flash
+Please retry in 13.634496661s. [links {
+  description: "Learn more about Gemini API quotas"
+  url: "https://ai.google.dev/gemini-api/docs/rate-limits"
+}
+, violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerDayPerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.0-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+}
+violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerMinutePerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.0-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+}
+violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_input_token_count"
+  quota_id: "GenerateContentInputTokensPerModelPerMinute-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.0-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+}
+, retry_delay {
+  seconds: 13
+}
+]
+2025-12-10 05:11:27 | store.test_agent | [32mINFO[0m | 📝 Comando parseado: sell | Confianza: 0.85
+2025-12-10 05:11:27,832 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2025-12-10 05:11:27,848 INFO sqlalchemy.engine.Engine SELECT anon_1.products_id AS anon_1_products_id, anon_1.products_sku AS anon_1_products_sku, anon_1.products_name AS anon_1_products_name, anon_1.products_description AS anon_1_products_description, anon_1.products_base_price AS anon_1_products_base_price, anon_1.products_category AS anon_1_products_category, anon_1.products_color AS anon_1_products_color, anon_1.products_image_url AS anon_1_products_image_url, anon_1.products_created_at AS anon_1_products_created_at, anon_1.products_updated_at AS anon_1_products_updated_at, product_variants_1.id AS product_variants_1_id, product_variants_1.product_id AS product_variants_1_product_id, product_variants_1.sku AS product_variants_1_sku, product_variants_1.size AS product_variants_1_size, product_variants_1.stock_physical AS product_variants_1_stock_physical, product_variants_1.stock_virtual AS product_variants_1_stock_virtual, product_variants_1.stock_total AS product_variants_1_stock_total, product_variants_1.price_adjustment AS product_variants_1_price_adjustment, product_variants_1.created_at AS product_variants_1_created_at, product_variants_1.updated_at AS product_variants_1_updated_at 
+FROM (SELECT products.id AS products_id, products.sku AS products_sku, products.name AS products_name, products.description AS products_description, products.base_price AS products_base_price, products.category AS products_category, products.color AS products_color, products.image_url AS products_image_url, products.created_at AS products_created_at, products.updated_at AS products_updated_at 
+FROM products 
+WHERE lower(products.name) LIKE lower(?) AND lower(products.color) LIKE lower(?)
+ LIMIT ? OFFSET ?) AS anon_1 LEFT OUTER JOIN product_variants AS product_variants_1 ON anon_1.products_id = product_variants_1.product_id
+2025-12-10 05:11:27,848 INFO sqlalchemy.engine.Engine [generated in 0.00041s] ('%Polo Blanco%', '%Blanco%', 1, 0)
+2025-12-10 05:11:27,861 INFO sqlalchemy.engine.Engine SELECT product_variants.id AS product_variants_id, product_variants.product_id AS product_variants_product_id, product_variants.sku AS product_variants_sku, product_variants.size AS product_variants_size, product_variants.stock_physical AS product_variants_stock_physical, product_variants.stock_virtual AS product_variants_stock_virtual, product_variants.stock_total AS product_variants_stock_total, product_variants.price_adjustment AS product_variants_price_adjustment, product_variants.created_at AS product_variants_created_at, product_variants.updated_at AS product_variants_updated_at, products_1.id AS products_1_id, products_1.sku AS products_1_sku, products_1.name AS products_1_name, products_1.description AS products_1_description, products_1.base_price AS products_1_base_price, products_1.category AS products_1_category, products_1.color AS products_1_color, products_1.image_url AS products_1_image_url, products_1.created_at AS products_1_created_at, products_1.updated_at AS products_1_updated_at 
+FROM product_variants LEFT OUTER JOIN products AS products_1 ON products_1.id = product_variants.product_id 
+WHERE product_variants.product_id = ? AND product_variants.size = ?
+ LIMIT ? OFFSET ?
+2025-12-10 05:11:27,861 INFO sqlalchemy.engine.Engine [generated in 0.00053s] (1, 'M', 1, 0)
+2025-12-10 05:11:27,862 INFO sqlalchemy.engine.Engine COMMIT
+2025-12-10 05:11:27 | store.test_agent | [31mERROR[0m | ❌ Error en store (process_message): Instance <ProductVariant at 0x162c7617a00> is not bound to a Session; attribute refresh operation cannot proceed (Background on this error at: https://sqlalche.me/e/20/bhk3)
+Traceback (most recent call last):
+  File "C:\Prototipo Tesis 1\src\agents\store_agent.py", line 80, in process_message
+    return await self._handle_inventory_operation(
+  File "C:\Prototipo Tesis 1\src\agents\store_agent.py", line 119, in _handle_inventory_operation
+    "variant_id": variant.id,
+  File "C:\Users\adria\anaconda3\lib\site-packages\sqlalchemy\orm\attributes.py", line 566, in __get__
+    return self.impl.get(state, dict_)  # type: ignore[no-any-return]
+  File "C:\Users\adria\anaconda3\lib\site-packages\sqlalchemy\orm\attributes.py", line 1086, in get
+    value = self._fire_loader_callables(state, key, passive)
+  File "C:\Users\adria\anaconda3\lib\site-packages\sqlalchemy\orm\attributes.py", line 1116, in _fire_loader_callables
+    return state._load_expired(state, passive)
+  File "C:\Users\adria\anaconda3\lib\site-packages\sqlalchemy\orm\state.py", line 798, in _load_expired
+    self.manager.expired_attribute_loader(self, toload, passive)
+  File "C:\Users\adria\anaconda3\lib\site-packages\sqlalchemy\orm\loading.py", line 1582, in load_scalar_attributes
+    raise orm_exc.DetachedInstanceError(
+sqlalchemy.orm.exc.DetachedInstanceError: Instance <ProductVariant at 0x162c7617a00> is not bound to a Session; attribute refresh operation cannot proceed (Background on this error at: https://sqlalche.me/e/20/bhk3)
+   Result: {'to': None, 'text': '❌ Ocurrió un error al procesar tu mensaje. Intenta nuevamente.', 'timestamp': '2025-12-10T10:11:27.888440', 'agent_id': 'test_agent'}
+
