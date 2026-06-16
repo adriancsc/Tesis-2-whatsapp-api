@@ -1,9 +1,10 @@
 """
 Gateway de WhatsApp usando Meta Cloud API
 Maneja la comunicación bidireccional con WhatsApp Business
+Soporta mensajes de texto, botones interactivos y listas
 """
 import requests
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from datetime import datetime
 
 from src.config import settings
@@ -23,6 +24,8 @@ class WhatsAppGateway:
             "Authorization": f"Bearer {self.access_token}",
             "Content-Type": "application/json"
         }
+    
+    # ============= Envío de Mensajes =============
     
     def send_message(self, to: str, message: str) -> Dict[str, Any]:
         """
@@ -48,31 +51,109 @@ class WhatsAppGateway:
             }
         }
         
-        try:
-            response = requests.post(
-                url,
-                headers=self.headers,
-                json=payload,
-                timeout=10
-            )
-            response.raise_for_status()
-            
-            result = response.json()
-            logger.info(f"✅ Mensaje enviado a {to}")
-            
-            return {
-                "success": True,
-                "message_id": result.get("messages", [{}])[0].get("id"),
-                "timestamp": datetime.utcnow().isoformat()
-            }
+        return self._send_request(url, payload, f"Mensaje de texto a {to}")
+    
+    def send_interactive_buttons(
+        self,
+        to: str,
+        body_text: str,
+        buttons: List[Dict[str, str]],
+        header: Optional[str] = None,
+        footer: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Envía un mensaje con botones de respuesta rápida (máximo 3)
         
-        except requests.exceptions.RequestException as e:
-            logger.error(f"❌ Error enviando mensaje: {e}")
-            return {
-                "success": False,
-                "error": str(e),
-                "timestamp": datetime.utcnow().isoformat()
+        Args:
+            to: Número de teléfono
+            body_text: Texto principal del mensaje
+            buttons: Lista de botones [{"id": "btn_1", "title": "Opción 1"}, ...]
+            header: Texto del encabezado (opcional)
+            footer: Texto del pie (opcional)
+        
+        Returns:
+            Respuesta de la API
+        """
+        url = f"{self.api_url}/{self.phone_number_id}/messages"
+        
+        interactive = {
+            "type": "button",
+            "body": {"text": body_text},
+            "action": {
+                "buttons": [
+                    {
+                        "type": "reply",
+                        "reply": {"id": btn["id"], "title": btn["title"]}
+                    }
+                    for btn in buttons[:3]  # Máximo 3 botones
+                ]
             }
+        }
+        
+        if header:
+            interactive["header"] = {"type": "text", "text": header}
+        if footer:
+            interactive["footer"] = {"text": footer}
+        
+        payload = {
+            "messaging_product": "whatsapp",
+            "recipient_type": "individual",
+            "to": to,
+            "type": "interactive",
+            "interactive": interactive
+        }
+        
+        return self._send_request(url, payload, f"Botones interactivos a {to}")
+    
+    def send_interactive_list(
+        self,
+        to: str,
+        body_text: str,
+        button_label: str,
+        sections: List[Dict[str, Any]],
+        header: Optional[str] = None,
+        footer: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Envía un mensaje con lista desplegable de opciones
+        
+        Args:
+            to: Número de teléfono
+            body_text: Texto principal del mensaje
+            button_label: Texto del botón que abre la lista
+            sections: Secciones con opciones
+                [{"title": "Sección", "rows": [{"id": "opt_1", "title": "Opción", "description": "..."}]}]
+            header: Texto del encabezado (opcional)
+            footer: Texto del pie (opcional)
+        
+        Returns:
+            Respuesta de la API
+        """
+        url = f"{self.api_url}/{self.phone_number_id}/messages"
+        
+        interactive = {
+            "type": "list",
+            "body": {"text": body_text},
+            "action": {
+                "button": button_label,
+                "sections": sections
+            }
+        }
+        
+        if header:
+            interactive["header"] = {"type": "text", "text": header}
+        if footer:
+            interactive["footer"] = {"text": footer}
+        
+        payload = {
+            "messaging_product": "whatsapp",
+            "recipient_type": "individual",
+            "to": to,
+            "type": "interactive",
+            "interactive": interactive
+        }
+        
+        return self._send_request(url, payload, f"Lista interactiva a {to}")
     
     def send_template_message(
         self,
@@ -105,6 +186,12 @@ class WhatsAppGateway:
             }
         }
         
+        return self._send_request(url, payload, f"Template '{template_name}' a {to}")
+    
+    # ============= Utilidades =============
+    
+    def _send_request(self, url: str, payload: Dict, description: str) -> Dict[str, Any]:
+        """Método interno para enviar peticiones a la API de WhatsApp"""
         try:
             response = requests.post(
                 url,
@@ -115,7 +202,7 @@ class WhatsAppGateway:
             response.raise_for_status()
             
             result = response.json()
-            logger.info(f"✅ Template enviado a {to}: {template_name}")
+            logger.info(f"✅ {description}")
             
             return {
                 "success": True,
@@ -124,7 +211,7 @@ class WhatsAppGateway:
             }
         
         except requests.exceptions.RequestException as e:
-            logger.error(f"❌ Error enviando template: {e}")
+            logger.error(f"❌ Error en {description}: {e}")
             return {
                 "success": False,
                 "error": str(e),
@@ -164,9 +251,12 @@ class WhatsAppGateway:
             logger.error(f"Error marcando mensaje como leído: {e}")
             return False
     
+    # ============= Parsing de Webhooks =============
+    
     def parse_webhook_message(self, webhook_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """
         Parsea un mensaje recibido del webhook de WhatsApp
+        Soporta mensajes de texto, respuestas de botón y selección de lista
         
         Args:
             webhook_data: Datos del webhook
@@ -191,7 +281,7 @@ class WhatsAppGateway:
             contacts = value.get("contacts", [])
             contact_name = contacts[0].get("profile", {}).get("name", "") if contacts else ""
             
-            # Parsear mensaje
+            # Parsear mensaje base
             parsed = {
                 "message_id": message.get("id"),
                 "from": message.get("from"),
@@ -201,14 +291,38 @@ class WhatsAppGateway:
             }
             
             # Extraer contenido según el tipo
-            if message.get("type") == "text":
+            msg_type = message.get("type")
+            
+            if msg_type == "text":
                 parsed["text"] = message.get("text", {}).get("body", "")
-            elif message.get("type") == "image":
+            
+            elif msg_type == "interactive":
+                interactive = message.get("interactive", {})
+                interactive_type = interactive.get("type")
+                
+                if interactive_type == "button_reply":
+                    button_reply = interactive.get("button_reply", {})
+                    parsed["interactive_type"] = "button_reply"
+                    parsed["interactive_id"] = button_reply.get("id", "")
+                    parsed["interactive_title"] = button_reply.get("title", "")
+                
+                elif interactive_type == "list_reply":
+                    list_reply = interactive.get("list_reply", {})
+                    parsed["interactive_type"] = "list_reply"
+                    parsed["interactive_id"] = list_reply.get("id", "")
+                    parsed["interactive_title"] = list_reply.get("title", "")
+            
+            elif msg_type == "image":
                 parsed["image"] = message.get("image", {})
-            elif message.get("type") == "document":
+            
+            elif msg_type == "document":
                 parsed["document"] = message.get("document", {})
             
-            logger.info(f"📩 Mensaje recibido de {parsed['from']}: {parsed.get('text', '[media]')}")
+            logger.info(
+                f"📩 Mensaje recibido de {parsed['from']} "
+                f"(tipo: {msg_type}): "
+                f"{parsed.get('text') or parsed.get('interactive_title', '[media]')}"
+            )
             
             return parsed
         

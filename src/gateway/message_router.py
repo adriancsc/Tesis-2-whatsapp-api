@@ -34,19 +34,19 @@ class MessageRouter:
         parsed_message = self.whatsapp.parse_webhook_message(webhook_data)
         
         if not parsed_message:
-            logger.warning("Mensaje de webhook no válido")
+            logger.warning("Mensaje de webhook no válido o no soportado")
             return {"success": False, "error": "Invalid webhook data"}
         
         # Marcar como leído
         if parsed_message.get("message_id"):
             self.whatsapp.mark_as_read(parsed_message["message_id"])
         
-        # Solo procesar mensajes de texto por ahora
-        if parsed_message.get("type") != "text":
-            logger.info(f"Tipo de mensaje no soportado: {parsed_message.get('type')}")
+        # Procesar mensajes soportados (texto e interactivos)
+        msg_type = parsed_message.get("type")
+        if msg_type not in ["text", "interactive"]:
+            logger.info(f"Tipo de mensaje no procesado por el store_agent: {msg_type}")
             return {"success": False, "error": "Unsupported message type"}
         
-        # Enviar al Agente de Tienda
         logger.info(f"📨 Enrutando mensaje al Store Agent")
         
         try:
@@ -61,25 +61,44 @@ class MessageRouter:
                 )
                 
                 # Actualizar respuesta con resultado del coordinador
+                response["response_type"] = "text"
                 if coordinator_response.get("success"):
                     response["text"] = self._format_success_message(coordinator_response)
                 else:
-                    response["text"] = f"❌ Error: {coordinator_response.get('error')}"
+                    response["text"] = f"❌ Error: {coordinator_response.get('error', 'Ocurrió un error al procesar el stock.')}"
             
-            # Enviar respuesta por WhatsApp
-            if response.get("text"):
+            # Enviar respuesta por WhatsApp según su tipo
+            to = response.get("to")
+            resp_type = response.get("response_type", "text")
+            
+            if resp_type == "text" and response.get("text"):
                 send_result = self.whatsapp.send_message(
-                    to=response.get("to"),
+                    to=to,
                     message=response.get("text")
                 )
-                
-                return {
-                    "success": send_result.get("success"),
-                    "message_sent": True,
-                    "timestamp": datetime.utcnow().isoformat()
-                }
             
-            return {"success": True, "message_sent": False}
+            elif resp_type == "interactive_buttons" and response.get("buttons"):
+                send_result = self.whatsapp.send_interactive_buttons(
+                    to=to,
+                    body_text=response.get("body", "Elige una opción:"),
+                    buttons=response.get("buttons")
+                )
+            
+            elif resp_type == "interactive_list" and response.get("sections"):
+                send_result = self.whatsapp.send_interactive_list(
+                    to=to,
+                    body_text=response.get("body", "Abre la lista:"),
+                    button_label=response.get("button_label", "Opciones"),
+                    sections=response.get("sections")
+                )
+            else:
+                return {"success": True, "message_sent": False, "reason": "No valid response to send"}
+                
+            return {
+                "success": send_result.get("success"),
+                "message_sent": True,
+                "timestamp": datetime.utcnow().isoformat()
+            }
         
         except Exception as e:
             logger.error(f"Error enrutando mensaje: {e}", exc_info=True)
@@ -87,7 +106,7 @@ class MessageRouter:
             # Enviar mensaje de error al usuario
             self.whatsapp.send_message(
                 to=parsed_message.get("from"),
-                message="❌ Ocurrió un error al procesar tu mensaje. Por favor, intenta nuevamente."
+                message="❌ Ocurrió un error al procesar tu petición. Por favor, intenta nuevamente escribiendo 'menu'."
             )
             
             return {"success": False, "error": str(e)}
@@ -101,15 +120,6 @@ class MessageRouter:
     ) -> Dict[str, Any]:
         """
         Envía una actualización de inventario directamente al Coordinador
-        
-        Args:
-            product_sku: SKU del producto
-            action: Acción a realizar
-            quantity: Cantidad
-            vendor_phone: Teléfono del vendedor
-        
-        Returns:
-            Resultado de la operación
         """
         request = {
             "action": action,
@@ -137,11 +147,12 @@ class MessageRouter:
         product = coordinator_response.get("product", {})
         
         return (
-            f"✅ Operación completada\n\n"
+            f"✅ Operación completada con éxito\n\n"
             f"📦 {product.get('name')} ({product.get('sku')})\n"
             f"📊 Stock anterior: {product.get('previous_stock')}\n"
             f"📊 Stock nuevo: {product.get('new_stock')}\n"
-            f"📊 Stock total: {product.get('stock_total')}"
+            f"📊 Stock total: {product.get('stock_total')}\n\n"
+            f"✨ El sistema web ha sido actualizado."
         )
 
 
