@@ -1,34 +1,26 @@
 """
-Enrutador de mensajes entre Gateway y Agentes
-Coordina la comunicación entre WhatsApp y los agentes del sistema
+Enrutador de mensajes entre Gateway y LangGraph
+Coordina la comunicación entre WhatsApp y el grafo de inventario
 """
 from typing import Dict, Any
 from datetime import datetime
 
 from src.gateway.whatsapp_gateway import whatsapp_gateway
-from src.agents import store_agent, coordinator_agent
+from src.agents import inventory_graph, AgentState, conversation_manager
 from src.utils.logger import setup_logger
 
 logger = setup_logger(__name__)
 
 
 class MessageRouter:
-    """Enrutador de mensajes del sistema MAS-CIS"""
+    """Enrutador de mensajes del sistema MAS-CIS (LangGraph)"""
     
     def __init__(self):
         self.whatsapp = whatsapp_gateway
-        self.store_agent = store_agent
-        self.coordinator = coordinator_agent
     
     async def route_whatsapp_message(self, webhook_data: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Enruta un mensaje de WhatsApp al agente correspondiente
-        
-        Args:
-            webhook_data: Datos del webhook de WhatsApp
-        
-        Returns:
-            Resultado del procesamiento
+        Enruta un mensaje de WhatsApp al grafo de LangGraph
         """
         # Parsear mensaje
         parsed_message = self.whatsapp.parse_webhook_message(webhook_data)
@@ -41,119 +33,82 @@ class MessageRouter:
         if parsed_message.get("message_id"):
             self.whatsapp.mark_as_read(parsed_message["message_id"])
         
-        # Procesar mensajes soportados (texto e interactivos)
+        # Obtener input y emisor
+        vendor_phone = parsed_message.get("from")
         msg_type = parsed_message.get("type")
-        if msg_type not in ["text", "interactive"]:
-            logger.info(f"Tipo de mensaje no procesado por el store_agent: {msg_type}")
-            return {"success": False, "error": "Unsupported message type"}
         
-        logger.info(f"📨 Enrutando mensaje al Store Agent")
+        # En el nuevo modelo numérico, solo aceptamos "text" o el body de list_reply
+        raw_text = ""
+        if msg_type == "text":
+            raw_text = parsed_message.get("text", "")
+        elif msg_type == "interactive":
+            interactive_type = parsed_message.get("interactive_type")
+            if interactive_type in ["list_reply", "button_reply"]:
+                # Por si alguien toca un botón antiguo, tomamos el id como texto
+                raw_text = parsed_message.get("interactive_id", "")
+        else:
+            logger.info(f"Tipo de mensaje no procesado: {msg_type}")
+            return {"success": False, "error": "Unsupported message type"}
+            
+        logger.info(f"📨 Enrutando mensaje de {vendor_phone} al Grafo LangGraph")
         
         try:
-            # Procesar con Store Agent
-            response = await self.store_agent.process_message(parsed_message)
+            # 1. Recuperar contexto de memoria
+            context = conversation_manager.get_context(vendor_phone)
             
-            # Si el Store Agent necesita al Coordinador
-            if response.get("requires_coordinator"):
-                logger.info("🔄 Enrutando al Coordinator Agent")
-                coordinator_response = await self.coordinator.process_message(
-                    response.get("coordinator_request", {})
-                )
-                
-                # Actualizar respuesta con resultado del coordinador
-                response["response_type"] = "text"
-                if coordinator_response.get("success"):
-                    response["text"] = self._format_success_message(coordinator_response)
-                else:
-                    response["text"] = f"❌ Error: {coordinator_response.get('error', 'Ocurrió un error al procesar el stock.')}"
+            # 2. Construir el estado inicial para LangGraph
+            initial_state: AgentState = {
+                "vendor_phone": vendor_phone,
+                "raw_text": raw_text,
+                "current_step": context.current_step,
+                "action": context.action,
+                "product_sku": context.product_sku,
+                "product_name": context.product_name,
+                "variant_id": context.variant_id,
+                "variant_sku": context.variant_sku,
+                "size": context.size,
+                "quantity": context.quantity,
+                "response_text": "",
+                "requires_coordinator": False,
+                "operation_success": False,
+                "size_options": context.size_options
+            }
             
-            # Enviar respuesta por WhatsApp según su tipo
-            to = response.get("to")
-            resp_type = response.get("response_type", "text")
+            # 3. Invocar el grafo (síncrono, LangGraph procesa rápido)
+            final_state = inventory_graph.invoke(initial_state)
             
-            if resp_type == "text" and response.get("text"):
+            # 4. Actualizar el contexto en memoria
+            context.update_from_state(final_state)
+            
+            # 5. Enviar la respuesta por WhatsApp
+            response_text = final_state.get("response_text", "")
+            if response_text:
                 send_result = self.whatsapp.send_message(
-                    to=to,
-                    message=response.get("text")
-                )
-            
-            elif resp_type == "interactive_buttons" and response.get("buttons"):
-                send_result = self.whatsapp.send_interactive_buttons(
-                    to=to,
-                    body_text=response.get("body", "Elige una opción:"),
-                    buttons=response.get("buttons")
-                )
-            
-            elif resp_type == "interactive_list" and response.get("sections"):
-                send_result = self.whatsapp.send_interactive_list(
-                    to=to,
-                    body_text=response.get("body", "Abre la lista:"),
-                    button_label=response.get("button_label", "Opciones"),
-                    sections=response.get("sections")
+                    to=vendor_phone,
+                    message=response_text
                 )
             else:
-                return {"success": True, "message_sent": False, "reason": "No valid response to send"}
+                send_result = {"success": True}
                 
             return {
-                "success": send_result.get("success"),
-                "message_sent": True,
+                "success": send_result.get("success", False),
+                "message_sent": bool(response_text),
                 "timestamp": datetime.utcnow().isoformat()
             }
         
         except Exception as e:
-            logger.error(f"Error enrutando mensaje: {e}", exc_info=True)
+            logger.error(f"Error enrutando mensaje al grafo: {e}", exc_info=True)
             
-            # Enviar mensaje de error al usuario
+            # Resetear contexto en caso de error grave
+            conversation_manager.reset_context(vendor_phone)
+            
+            # Enviar mensaje de error
             self.whatsapp.send_message(
-                to=parsed_message.get("from"),
-                message="❌ Ocurrió un error al procesar tu petición. Por favor, intenta nuevamente escribiendo 'menu'."
+                to=vendor_phone,
+                message="❌ Ocurrió un error interno al procesar tu petición. La conversación ha sido reiniciada. Escribe 'menu' para empezar."
             )
             
             return {"success": False, "error": str(e)}
-    
-    async def send_inventory_update(
-        self,
-        product_sku: str,
-        action: str,
-        quantity: int,
-        vendor_phone: str
-    ) -> Dict[str, Any]:
-        """
-        Envía una actualización de inventario directamente al Coordinador
-        """
-        request = {
-            "action": action,
-            "product_sku": product_sku,
-            "quantity": quantity,
-            "vendor_phone": vendor_phone,
-            "timestamp": datetime.utcnow().isoformat()
-        }
-        
-        result = await self.coordinator.process_message(request)
-        
-        # Notificar al vendedor
-        if vendor_phone and result.get("success"):
-            message = self._format_success_message(result)
-            self.whatsapp.send_message(to=vendor_phone, message=message)
-        
-        return result
-    
-    def _format_success_message(self, coordinator_response: Dict[str, Any]) -> str:
-        """Formatea un mensaje de éxito del coordinador"""
-        
-        if not coordinator_response.get("success"):
-            return f"❌ Error: {coordinator_response.get('error')}"
-        
-        product = coordinator_response.get("product", {})
-        
-        return (
-            f"✅ Operación completada con éxito\n\n"
-            f"📦 {product.get('name')} ({product.get('sku')})\n"
-            f"📊 Stock anterior: {product.get('previous_stock')}\n"
-            f"📊 Stock nuevo: {product.get('new_stock')}\n"
-            f"📊 Stock total: {product.get('stock_total')}\n\n"
-            f"✨ El sistema web ha sido actualizado."
-        )
 
 
 # Instancia global del router

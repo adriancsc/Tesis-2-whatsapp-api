@@ -22,7 +22,7 @@ from src.api.schemas import (
     InventoryItem
 )
 from src.gateway import message_router, whatsapp_gateway
-from src.agents import store_agent, coordinator_agent
+from src.agents import get_store_agent_info, get_coordinator_agent_info, process_api_stock_update
 from src.utils.logger import setup_logger
 
 logger = setup_logger(__name__)
@@ -84,8 +84,8 @@ async def health_check():
         "status": "healthy",
         "database": "connected",
         "agents": {
-            "store": store_agent.get_info(),
-            "coordinator": coordinator_agent.get_info()
+            "store": get_store_agent_info(),
+            "coordinator": get_coordinator_agent_info()
         },
         "timestamp": datetime.utcnow().isoformat()
     }
@@ -297,14 +297,13 @@ async def update_stock(
     if not product:
         raise HTTPException(status_code=404, detail=f"Producto no encontrado: {sku}")
     
-    # Enviar al Agente Coordinador
-    result = await coordinator_agent.process_message({
-        "action": stock_update.action,
-        "product_sku": sku,
-        "quantity": stock_update.quantity,
-        "vendor_phone": stock_update.vendor_phone or "API",
-        "timestamp": datetime.utcnow().isoformat()
-    })
+    # Enviar actualización al grafo de LangGraph
+    result = process_api_stock_update(
+        action=stock_update.action,
+        variant_sku=sku,
+        quantity=stock_update.quantity,
+        vendor_phone=stock_update.vendor_phone or "API"
+    )
     
     if not result.get("success"):
         raise HTTPException(status_code=400, detail=result.get("error"))
@@ -454,8 +453,8 @@ async def get_inventory_summary(
 async def get_agents_info():
     """Obtener información de los agentes"""
     return [
-        AgentInfoResponse(**store_agent.get_info()),
-        AgentInfoResponse(**coordinator_agent.get_info())
+        AgentInfoResponse(**get_store_agent_info()),
+        AgentInfoResponse(**get_coordinator_agent_info())
     ]
 
 

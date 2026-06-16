@@ -6,7 +6,7 @@ Este archivo sirve como una guía de referencia rápida para comprender la estru
 
 ## 🎯 ¿Qué es el Sistema MAS-CIS?
 
-Es un prototipo de tesis diseñado para sincronizar en tiempo real el inventario físico de tiendas minoristas (ej. Gamarra) y su tienda en línea (E-commerce). Permite a los vendedores registrar transacciones (ventas, adición de stock, consultas) directamente a través de **WhatsApp** usando lenguaje natural procesado por un **sistema multiagente** asistido por un motor NLU local (spaCy + Regex).
+Es un prototipo de tesis diseñado para sincronizar en tiempo real el inventario físico de tiendas minoristas (ej. Gamarra) y su tienda en línea (E-commerce). Permite a los vendedores registrar transacciones (ventas, adición de stock, consultas) directamente a través de **WhatsApp** usando un **menú interactivo numérico** gestionado por un sistema basado en grafos de estado FSM (LangGraph).
 
 ---
 
@@ -23,11 +23,9 @@ Prototipo Tesis 1/
 │   └── product-detail.html       # Detalle de variante de producto
 │
 ├── src/                          # Código fuente del Backend (Python)
-│   ├── agents/                   # Sistema de Agentes Autónomos
-│   │   ├── base_agent.py         # Clase base abstracta de agentes
-│   │   ├── coordinator_agent.py  # Agente Coordinador (sincronización y lógica central)
-│   │   ├── store_agent.py        # Agente de Tienda (NLU e interacción con el vendedor)
-│   │   ├── nlu_processor.py      # Procesador NLU local (spaCy + Regex)
+│   ├── agents/                   # Sistema de Agentes Autónomos (LangGraph)
+│   │   ├── inventory_graph.py    # Grafo principal de agentes y lógica FSM
+│   │   ├── conversation_state.py # Puente de memoria para current_step
 │   │   └── dtos.py               # Data Transfer Objects (VariantDTO, ProductDTO)
 │   │
 │   ├── api/                      # Endpoints REST y Webhooks (FastAPI)
@@ -65,22 +63,22 @@ Prototipo Tesis 1/
 ## ⚙️ Funcionamiento Principal
 
 El flujo interactivo opera de la siguiente manera:
-1. **Entrada de Usuario**: Un vendedor envía un mensaje de texto por WhatsApp (ej: *"Vendí 3 polos negros talla M"*).
+1. **Entrada de Usuario**: Un vendedor envía un número por WhatsApp (ej: *"1"* para seleccionar una opción de menú).
 2. **Recepción & Ruteo**: 
    - El webhook de FastAPI (`/webhooks/whatsapp`) recibe el evento JSON.
-   - El [whatsapp_gateway.py](file:///c:/Prototipo%20Tesis%201/src/gateway/whatsapp_gateway.py) extrae el número y texto.
-   - El [message_router.py](file:///c:/Prototipo%20Tesis%201/src/gateway/message_router.py) redirige la información al **Store Agent**.
-3. **Comprensión (NLU)**:
-   - El **Store Agent** utiliza [nlu_processor.py](file:///c:/Prototipo%20Tesis%201/src/agents/nlu_processor.py) para analizar el texto usando un motor de NLP local de manera offline (sin costo de API de terceros).
-   - Se obtiene un comando estructurado: `{"action": "sell", "product_sku": "POLO-NEGRO", "quantity": 3, "size": "M"}`.
-4. **Validación y Ejecución**:
-   - Se localiza la variante del producto por SKU y talla en la base de datos usando el `product_repository`.
-   - Se valida el inventario físico disponible.
-   - Si es válido, se efectúa la transacción restando el stock físico y total, y se registra un log en la tabla `transactions`.
+   - El [whatsapp_gateway.py](file:///c:/Prototipo%20Tesis%201/src/gateway/whatsapp_gateway.py) extrae el número de teléfono y texto.
+   - El [message_router.py](file:///c:/Prototipo%20Tesis%201/src/gateway/message_router.py) recupera el `current_step` de memoria y delega al grafo LangGraph.
+3. **Navegación FSM (Store Node)**:
+   - El `store_node` avanza la máquina de estados según el input del usuario (MAIN_MENU -> SELECT_PRODUCT -> SELECT_SIZE -> ...).
+   - Acumula los datos (SKU de producto, talla, cantidad) en el `AgentState`.
+4. **Validación y Ejecución (Coordinator Node)**:
+   - Al confirmar, el `coordinator_node` localiza la variante del producto por SKU y talla.
+   - Se valida el inventario físico disponible atómicamente.
+   - Si es válido, se efectúa la transacción restando el stock, y se registra en `transactions` y `agent_logs`.
 5. **Respuesta**:
-   - El **Store Agent** genera una confirmación (ej: *"✅ Venta registrada: Polo Negro, Talla M. Nuevo stock: 5"*).
+   - LangGraph retorna el estado final.
    - El Gateway envía el mensaje de respuesta de vuelta al vendedor por WhatsApp.
-   - El **Dashboard Web** (Frontend) se refresca automáticamente reflejando el nuevo stock en tiempo real.
+   - El **Dashboard Web** (Frontend) se puede refrescar reflejando el nuevo stock.
 
 ---
 
@@ -95,8 +93,7 @@ Abre una terminal de PowerShell en la raíz del proyecto y ejecuta:
 ```
 Este script:
 - Verificará que tengas Python 3.10+.
-- Instalará todas las librerías en `requirements.txt`.
-- Descargará el modelo de procesamiento de lenguaje en español de spaCy (`es_core_news_sm`).
+- Instalará todas las librerías en `requirements.txt` (incluyendo LangGraph).
 - Creará un archivo `.env` a partir de `.env.example`.
 
 ### Paso 2: Inicializar la Base de Datos
@@ -108,7 +105,6 @@ python src/database/recreate_db_with_variants.py
 
 ### Paso 3: Configurar las Credenciales (.env)
 Abre el archivo [`.env`](file:///c:/Prototipo%20Tesis%201/.env) en el editor. Las variables principales son:
-- `GEMINI_API_KEY`: Tu clave de la API de Google AI Studio (Opcional, si se desea utilizar fallback con LLM en el futuro).
 - `WHATSAPP_API_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_VERIFY_TOKEN`: Credenciales para conectar el webhook con Meta Developer Console.
 - `DB_DRIVER`: Establecido en `sqlite` por defecto. Si decides usar Microsoft SQL Server, cambia la configuración a:
   ```ini

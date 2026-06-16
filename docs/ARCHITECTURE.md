@@ -46,32 +46,30 @@ graph TB
         API[API REST FastAPI]
     end
     
-    subgraph "Capa de Agentes MAS"
-        SA[Agente de Tienda<br/>Store Agent]
-        CA[Agente Coordinador<br/>Coordinator Agent]
-        NLU[Procesador NLU<br/>spaCy]
+    subgraph "Capa de Agentes MAS (LangGraph)"
+        IG[Inventory Graph<br/>StateGraph]
+        SA[Store Node<br/>Gestión de Menú FSM]
+        CA[Coordinator Node<br/>Transacciones]
     end
     
     subgraph "Capa de Datos"
-        DB[(Base de Datos<br/>SQL Server)]
-        CACHE[Cache/Sesiones<br/>Redis opcional]
+        DB[(Base de Datos<br/>SQLite/SQL Server)]
+        MEM[Memoria<br/>Conversation Manager]
     end
     
     subgraph "Capa de Integración"
         EC[Plataforma<br/>E-commerce]
     end
     
-    V -->|Mensaje de texto| WA
+    V -->|Mensaje numérico| WA
     WA -->|Webhook| GW
-    GW -->|JSON| SA
-    SA -->|Parse| NLU
-    NLU -->|Comando| SA
-    SA -->|Solicitud| CA
-    CA -->|SQL| DB
-    CA -->|Respuesta| SA
-    SA -->|Mensaje| GW
+    GW -->|Agrupa Estado| IG
+    IG -->|route| SA
+    SA -->|route_after_store| CA
+    CA -->|SQL Atómico| DB
+    IG -->|Respuesta| GW
     GW -->|API Call| WA
-    WA -->|Respuesta| V
+    WA -->|Respuesta Textual| V
     
     D -->|HTTP| API
     API -->|Query| DB
@@ -80,11 +78,11 @@ graph TB
     CA -->|Sync| EC
     EC -->|Stock Query| API
     
-    SA -.->|Sesiones| CACHE
+    GW -.->|Mantiene current_step| MEM
     
+    style IG fill:#4f46e5,stroke:#4338ca,color:#fff
     style SA fill:#6366f1,stroke:#4f46e5,color:#fff
-    style CA fill:#8b5cf6,stroke:#7c3aed,color:#fff
-    style NLU fill:#ec4899,stroke:#db2777,color:#fff
+    style CA fill:#10b981,stroke:#059669,color:#fff
     style DB fill:#10b981,stroke:#059669,color:#fff
     style GW fill:#f59e0b,stroke:#d97706,color:#fff
 ```
@@ -97,127 +95,49 @@ graph TB
 | **Comunicación** | Gateway y API | FastAPI, WhatsApp API |
 | **Agentes** | Lógica de negocio | Python, spaCy |
 | **Datos** | Persistencia | SQL Server, SQLAlchemy |
-| **Integración** | Conexión externa | REST API |
+| **Integración** | Conexión externa | REST### 1. Grafo de Agentes (Inventory Graph)
+
+**Propósito:** Máquina de Estados Finitos (FSM) gestionada por LangGraph que enruta las interacciones del usuario hacia el nodo adecuado.
+
+```mermaid
+graph TD
+    START((START)) --> store_node["store_node<br/>Procesa input del menú"]
+    store_node --> ROUTE{"route_after_store()"}
+    ROUTE -->|"transacción pendiente"| coordinator_node["coordinator_node<br/>Transacción Atómica"]
+    ROUTE -->|"sin transacción"| END_1((END))
+    coordinator_node --> END_2((END))
+    
+    style store_node fill:#6366f1,color:#fff
+    style coordinator_node fill:#10b981,color:#fff
+    style ROUTE fill:#f59e0b,color:#000
+```
+
+**Código:** `src/agents/inventory_graph.py`
 
 ---
 
-## 🤖 Componentes del Sistema
+### 2. Nodo de Tienda (Store Node)
 
-### 1. Agente de Tienda (Store Agent)
-
-**Propósito:** Interfaz inteligente entre el vendedor y el sistema.
-
-```mermaid
-graph LR
-    subgraph "Store Agent"
-        RM[Recibir Mensaje]
-        PS[Parsear con NLU]
-        VS[Validar Sesión]
-        BP[Buscar Producto]
-        SC[Solicitar a Coordinador]
-        RE[Responder]
-    end
-    
-    RM --> PS
-    PS --> VS
-    VS --> BP
-    BP --> SC
-    SC --> RE
-    
-    style RM fill:#6366f1,color:#fff
-    style PS fill:#6366f1,color:#fff
-    style VS fill:#6366f1,color:#fff
-    style BP fill:#6366f1,color:#fff
-    style SC fill:#6366f1,color:#fff
-    style RE fill:#6366f1,color:#fff
-```
+**Propósito:** Gestionar la navegación del menú numérico y mantener el contexto de la transacción en preparación.
 
 **Características:**
-- ✅ Procesamiento de lenguaje natural
-- ✅ Gestión de contexto conversacional
-- ✅ Validación de comandos
-- ✅ Búsqueda inteligente de productos
-
-**Código:** [store_agent.py](file:///c:/Prototipo%20Tesis%201/src/agents/store_agent.py)
+- ✅ Control de estado conversacional (current_step)
+- ✅ Generación dinámica de menús desde la base de datos
+- ✅ Acumulación de atributos transaccionales en el `AgentState`
 
 ---
 
-### 2. Agente Coordinador (Coordinator Agent)
+### 3. Nodo Coordinador (Coordinator Node)
 
-**Propósito:** Orquestar operaciones de inventario y garantizar consistencia.
-
-```mermaid
-graph LR
-    subgraph "Coordinator Agent"
-        RQ[Recibir Solicitud]
-        VL[Validar Operación]
-        UP[Actualizar Stock]
-        TR[Registrar Transacción]
-        SY[Sincronizar E-commerce]
-        LG[Registrar Log]
-    end
-    
-    RQ --> VL
-    VL --> UP
-    UP --> TR
-    TR --> SY
-    SY --> LG
-    
-    style RQ fill:#8b5cf6,color:#fff
-    style VL fill:#8b5cf6,color:#fff
-    style UP fill:#8b5cf6,color:#fff
-    style TR fill:#8b5cf6,color:#fff
-    style SY fill:#8b5cf6,color:#fff
-    style LG fill:#8b5cf6,color:#fff
-```
+**Propósito:** Orquestar operaciones atómicas de inventario sobre las variantes de producto.
 
 **Responsabilidades:**
-- ✅ Validación de reglas de negocio
-- ✅ Actualización atómica de stock
-- ✅ Registro de transacciones
-- ✅ Sincronización con e-commerce
-- ✅ Detección de conflictos
+- ✅ Validación estricta de reglas de negocio sobre el stock físico
+- ✅ Actualización atómica de `ProductVariant`
+- ✅ Registro inmutable en el kárdex (`Transaction`)
+- ✅ Registro de auditoría (`AgentLog`)
 
-**Código:** [coordinator_agent.py](file:///c:/Prototipo%20Tesis%201/src/agents/coordinator_agent.py)
-
----
-
-### 3. Procesador NLU (Natural Language Understanding)
-
-**Propósito:** Extraer intención y entidades de mensajes en lenguaje natural.
-
-```mermaid
-graph TB
-    subgraph "NLU Pipeline"
-        IN[Texto de entrada]
-        TK[Tokenización]
-        AC[Extracción de Acción]
-        QT[Extracción de Cantidad]
-        PR[Extracción de Producto]
-        AT[Extracción de Atributos]
-        CF[Cálculo de Confianza]
-        OUT[Comando Estructurado]
-    end
-    
-    IN --> TK
-    TK --> AC
-    TK --> QT
-    TK --> PR
-    TK --> AT
-    AC --> CF
-    QT --> CF
-    PR --> CF
-    AT --> CF
-    CF --> OUT
-    
-    style IN fill:#ec4899,color:#fff
-    style OUT fill:#ec4899,color:#fff
-    style CF fill:#f59e0b,color:#fff
-```
-
-**Técnicas Utilizadas:**
-- 📝 Expresiones regulares para patrones
-- 🧠 spaCy para análisis morfológico
+---y para análisis morfológico
 - 🎯 Clasificación de intenciones
 - 📊 Scoring de confianza
 
@@ -267,29 +187,21 @@ sequenceDiagram
     participant V as Vendedor
     participant WA as WhatsApp
     participant GW as Gateway
-    participant SA as Store Agent
-    participant NLU as NLU Processor
-    participant CA as Coordinator
+    participant IG as LangGraph
     participant DB as Database
-    participant EC as E-commerce
     
-    V->>WA: "Vendí 3 polos rojos M"
+    V->>WA: (Navega menú y selecciona confirmar cantidad) "1"
     WA->>GW: Webhook
-    GW->>SA: Mensaje parseado
-    SA->>NLU: Parsear texto
-    NLU->>SA: {action: sell, qty: 3, product: polo rojo M}
-    SA->>DB: Buscar producto
-    DB->>SA: Producto encontrado
-    SA->>CA: Solicitud de venta
-    CA->>DB: Validar stock
-    DB->>CA: Stock suficiente
-    CA->>DB: UPDATE stock
-    CA->>DB: INSERT transaction
-    CA->>EC: Notificar cambio
-    CA->>SA: Operación exitosa
-    SA->>GW: Mensaje de confirmación
-    GW->>WA: Enviar respuesta
-    WA->>V: "✅ Venta registrada"
+    GW->>IG: inventory_graph.invoke(AgentState)
+    IG->>IG: store_node procesa la confirmación
+    IG->>IG: route_after_store delega al coordinator_node
+    IG->>DB: coordinator_node valida stock en variante
+    DB->>IG: OK
+    IG->>DB: UPDATE ProductVariant
+    IG->>DB: INSERT Transaction (Kárdex)
+    IG->>GW: Retorna AgentState modificado (success)
+    GW->>WA: Enviar comprobante de texto
+    WA->>V: "✅ Operación completada con éxito"
 ```
 
 ### Estados de una Operación
@@ -460,14 +372,13 @@ graph TD
 
 ### Validaciones Implementadas
 
-1. **Validación de Entrada (NLU)**
-   - Confianza mínima: 0.7
-   - Comando reconocido
-   - Parámetros presentes
+1. **Validación de Menú (Store Node)**
+   - Opciones numéricas válidas según estado (FSM)
+   - Cantidades son números enteros > 0
 
-2. **Validación de Negocio (Coordinator)**
-   - Stock suficiente para ventas
-   - Cantidades positivas
+2. **Validación de Negocio (Coordinator Node)**
+   - Stock suficiente para ventas/mermas
+   - Existencia real de la variante en BD
    - Producto existe
    - Operación permitida
 
@@ -606,11 +517,10 @@ sequenceDiagram
 
 | Tecnología | Justificación |
 |------------|---------------|
-| **Python** | Excelente para IA/NLP, gran ecosistema |
+| **Python** | Excelente ecosistema de datos e integración |
 | **FastAPI** | Alto rendimiento, documentación automática |
-| **SQLAlchemy** | ORM robusto, soporte multi-DB |
-| **SQL Server** | Requerimiento del usuario, enterprise-grade |
-| **spaCy** | Líder en NLP, modelos en español |
+| **SQLAlchemy** | ORM robusto, soporte multi-DB (SQLite/SQL Server) |
+| **LangGraph** | Framework nativo de agentes, FSM determinista para UX crítica |
 | **WhatsApp API** | Canal preferido de vendedores |
 
 ---

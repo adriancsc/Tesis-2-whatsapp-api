@@ -1,14 +1,19 @@
-"""Paquete de agentes"""
-from .base_agent import BaseAgent, AgentStatus
-from .nlu_processor import nlu_processor, ParsedCommand
-from .store_agent import store_agent
-from .coordinator_agent import coordinator_agent
+"""Paquete de Agentes MAS-CIS"""
+
+from .inventory_graph import (
+    inventory_graph,
+    AgentState,
+    get_store_agent_info,
+    get_coordinator_agent_info,
+    process_api_stock_update
+)
+from .conversation_state import conversation_manager
 
 __all__ = [
-    "BaseAgent",
-    "AgentStatus",
-    "nlu_processor",
-    "ParsedCommand",
-    "store_agent",
-    "coordinator_agent"
+    "inventory_graph",
+    "AgentState",
+    "get_store_agent_info",
+    "get_coordinator_agent_info",
+    "process_api_stock_update",
+    "conversation_manager"
 ]
