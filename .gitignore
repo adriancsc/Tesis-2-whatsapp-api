@@ -32,6 +32,21 @@ ENV/
 .vscode/
 .idea/
 *.swp
+
+# Bases de datos locales y memoria MAS
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs del sistema
+*.log
+logs/
+
+# Testing y OS
+.pytest_cache/
+.DS_Store
+Thumbs.db
+
 *.swo
 *~
 

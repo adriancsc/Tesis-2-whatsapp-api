@@ -22,7 +22,11 @@ from src.api.schemas import (
     InventoryItem
 )
 from src.gateway import message_router, whatsapp_gateway
-from src.agents import get_store_agent_info, get_coordinator_agent_info, process_api_stock_update
+from src.agents import (
+    get_store_agent_info, get_coordinator_agent_info, 
+    get_sync_agent_info, get_alert_agent_info,
+    process_api_stock_update, agent_orchestrator, MASState
+)
 from src.utils.logger import setup_logger
 
 logger = setup_logger(__name__)
@@ -340,6 +344,64 @@ async def get_transactions(
     return transactions
 
 
+# ============= E-Commerce Webhook =============
+
+@app.post("/webhooks/ecommerce", tags=["Webhooks"])
+async def ecommerce_webhook(request: Request, db: Session = Depends(get_db_session)):
+    """Recibir órdenes de compra desde E-commerce (CU-04)"""
+    try:
+        webhook_data = await request.json()
+        logger.info(f"🛒 Webhook recibido de E-Commerce: {webhook_data}")
+        
+        order_id = webhook_data.get("order_id", f"WEB-{int(datetime.utcnow().timestamp())}")
+        items = webhook_data.get("items", [])
+        
+        if not items:
+            return JSONResponse(content={"status": "ignored", "reason": "no_items"}, status_code=200)
+            
+        item = items[0]
+        variant_sku = item.get("sku")
+        quantity = item.get("quantity", 1)
+        
+        from langchain_core.runnables import RunnableConfig
+        
+        initial_state: MASState = {
+            "source": "ecommerce",
+            "vendor_phone": None,
+            "raw_text": "",
+            "current_step": "CONFIRM",
+            "action": "sell_web",
+            "product_sku": None,
+            "product_name": None,
+            "variant_id": None,
+            "variant_sku": variant_sku,
+            "size": None,
+            "quantity": quantity,
+            "response_text": "",
+            "requires_coordinator": True,
+            "requires_sync": False,
+            "requires_alert": False,
+            "conflict_detected": False,
+            "operation_success": False,
+            "size_options": None,
+            "messages": [],
+            "ecommerce_order_id": order_id,
+            "ecommerce_action": "process_order",
+        }
+        
+        config: RunnableConfig = {"configurable": {"thread_id": f"web_{order_id}"}}
+        result = agent_orchestrator.invoke(initial_state, config)
+        
+        if result.get("operation_success"):
+            return JSONResponse(content={"status": "confirmed", "order_id": order_id}, status_code=200)
+        else:
+            return JSONResponse(content={"status": "cancelled", "reason": "stock_insuficiente"}, status_code=400)
+            
+    except Exception as e:
+        logger.error(f"Error procesando webhook e-commerce: {e}", exc_info=True)
+        return JSONResponse(content={"status": "error", "message": str(e)}, status_code=500)
+
+
 # ============= WhatsApp Webhook =============
 
 @app.get("/webhooks/whatsapp", tags=["Webhooks"])
@@ -438,9 +500,9 @@ async def get_inventory_summary(
         InventoryItem(
             sku=p.sku,
             name=p.name,
-            stock_physical=p.total_stock,  # Usar total_stock de variantes
+            stock_physical=sum(v.stock_physical for v in p.variants) if p.variants else 0,
             stock_virtual=0,  # Ya no usamos stock virtual
-            stock_total=p.total_stock,
+            stock_total=sum(v.stock_total for v in p.variants) if p.variants else 0,
             price=p.base_price,
             category=p.category,
             last_updated=p.updated_at
@@ -454,7 +516,9 @@ async def get_agents_info():
     """Obtener información de los agentes"""
     return [
         AgentInfoResponse(**get_store_agent_info()),
-        AgentInfoResponse(**get_coordinator_agent_info())
+        AgentInfoResponse(**get_coordinator_agent_info()),
+        AgentInfoResponse(**get_sync_agent_info()),
+        AgentInfoResponse(**get_alert_agent_info())
     ]
 
 

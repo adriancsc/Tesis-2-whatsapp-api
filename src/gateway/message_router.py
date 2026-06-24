@@ -4,9 +4,11 @@ Coordina la comunicación entre WhatsApp y el grafo de inventario
 """
 from typing import Dict, Any
 from datetime import datetime
+from langchain_core.runnables import RunnableConfig
 
 from src.gateway.whatsapp_gateway import whatsapp_gateway
-from src.agents import inventory_graph, AgentState, conversation_manager
+from src.agents import agent_orchestrator, conversation_manager
+from src.agents.state import MASState
 from src.utils.logger import setup_logger
 
 logger = setup_logger(__name__)
@@ -57,7 +59,8 @@ class MessageRouter:
             context = conversation_manager.get_context(vendor_phone)
             
             # 2. Construir el estado inicial para LangGraph
-            initial_state: AgentState = {
+            initial_state: MASState = {
+                "source": "whatsapp",
                 "vendor_phone": vendor_phone,
                 "raw_text": raw_text,
                 "current_step": context.current_step,
@@ -70,12 +73,19 @@ class MessageRouter:
                 "quantity": context.quantity,
                 "response_text": "",
                 "requires_coordinator": False,
+                "requires_sync": False,
+                "requires_alert": False,
+                "conflict_detected": False,
                 "operation_success": False,
-                "size_options": context.size_options
+                "size_options": context.size_options,
+                "messages": [],
+                "ecommerce_order_id": None,
+                "ecommerce_action": None,
             }
             
             # 3. Invocar el grafo (síncrono, LangGraph procesa rápido)
-            final_state = inventory_graph.invoke(initial_state)
+            config: RunnableConfig = {"configurable": {"thread_id": vendor_phone}}
+            final_state = agent_orchestrator.invoke(initial_state, config)
             
             # 4. Actualizar el contexto en memoria
             context.update_from_state(final_state)

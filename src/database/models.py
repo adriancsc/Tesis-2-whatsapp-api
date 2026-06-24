@@ -111,6 +111,22 @@ class ChatSession(Base):
         return f"<ChatSession(vendor={self.vendor_phone}, status={self.status})>"
 
 
+class WebOrder(Base):
+    """Modelo de Orden Web (E-Commerce)"""
+    __tablename__ = "web_orders"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    order_id = Column(String(100), unique=True, nullable=False, index=True)
+    customer_email = Column(String(150), nullable=True)
+    total_amount = Column(Float, nullable=False)
+    status = Column(String(20), default="pending")  # pending, confirmed, cancelled, refunded
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    def __repr__(self):
+        return f"<WebOrder(id={self.order_id}, status={self.status})>"
+
+
 class AgentLog(Base):
     """Modelo de Log de Actividad de Agentes"""
     __tablename__ = "agent_logs"
