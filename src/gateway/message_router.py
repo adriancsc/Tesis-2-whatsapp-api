@@ -83,9 +83,9 @@ class MessageRouter:
                 "ecommerce_action": None,
             }
             
-            # 3. Invocar el grafo (síncrono, LangGraph procesa rápido)
+            # 3. Invocar el grafo (asíncrono, no bloquea el event loop de FastAPI)
             config: RunnableConfig = {"configurable": {"thread_id": vendor_phone}}
-            final_state = agent_orchestrator.invoke(initial_state, config)
+            final_state = await agent_orchestrator.ainvoke(initial_state, config)
             
             # 4. Actualizar el contexto en memoria
             context.update_from_state(final_state)
