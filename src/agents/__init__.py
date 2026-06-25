@@ -1,7 +1,7 @@
 """Paquete de Agentes MAS-CIS"""
 
 from .mas_orchestrator import (
-    agent_orchestrator,
+    mas_app,
     get_store_agent_info,
     get_coordinator_agent_info,
     get_sync_agent_info,
@@ -12,7 +12,7 @@ from .state import MASState
 from .conversation_state import conversation_manager
 
 __all__ = [
-    "agent_orchestrator",
+    "mas_app",
     "MASState",
     "get_store_agent_info",
     "get_coordinator_agent_info",

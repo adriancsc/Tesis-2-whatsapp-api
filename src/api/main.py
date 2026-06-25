@@ -25,7 +25,7 @@ from src.gateway import message_router, whatsapp_gateway
 from src.agents import (
     get_store_agent_info, get_coordinator_agent_info, 
     get_sync_agent_info, get_alert_agent_info,
-    process_api_stock_update, agent_orchestrator, MASState
+    process_api_stock_update, mas_app, MASState
 )
 from src.utils.logger import setup_logger
 
@@ -390,7 +390,7 @@ async def ecommerce_webhook(request: Request, db: Session = Depends(get_db_sessi
         }
         
         config: RunnableConfig = {"configurable": {"thread_id": f"web_{order_id}"}}
-        result = agent_orchestrator.invoke(initial_state, config)
+        result = mas_app.invoke(initial_state, config)
         
         if result.get("operation_success"):
             return JSONResponse(content={"status": "confirmed", "order_id": order_id}, status_code=200)

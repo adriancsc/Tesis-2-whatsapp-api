@@ -187,7 +187,7 @@ def process_api_stock_update(
     config: RunnableConfig = {"configurable": {"thread_id": vendor_phone}}
     # Llamamos al coordinador directamente o dejamos que siga el flujo natural
     # En este caso vamos al store_agent que enrutará porque requires_coordinator = True
-    result = agent_orchestrator.invoke(initial_state, config)
+    result = mas_app.invoke(initial_state, config)
 
     return {
         "success": result.get("operation_success", False),
@@ -265,6 +265,6 @@ def _build_graph() -> StateGraph:
 
 # --- Compilar el grafo (variable global lista para uso) ---
 memory_saver = MemorySaver()
-agent_orchestrator = _build_graph().compile(checkpointer=memory_saver)
+mas_app = _build_graph().compile(checkpointer=memory_saver)
 
 logger.info("✅ Grafo Multiagente LangGraph compilado exitosamente")

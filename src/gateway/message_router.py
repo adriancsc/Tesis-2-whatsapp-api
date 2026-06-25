@@ -7,7 +7,7 @@ from datetime import datetime
 from langchain_core.runnables import RunnableConfig
 
 from src.gateway.whatsapp_gateway import whatsapp_gateway
-from src.agents import agent_orchestrator, conversation_manager
+from src.agents import mas_app, conversation_manager
 from src.agents.state import MASState
 from src.utils.logger import setup_logger
 
@@ -85,7 +85,7 @@ class MessageRouter:
             
             # 3. Invocar el grafo (asíncrono, no bloquea el event loop de FastAPI)
             config: RunnableConfig = {"configurable": {"thread_id": vendor_phone}}
-            final_state = await agent_orchestrator.ainvoke(initial_state, config)
+            final_state = await mas_app.ainvoke(initial_state, config)
             
             # 4. Actualizar el contexto en memoria
             context.update_from_state(final_state)
