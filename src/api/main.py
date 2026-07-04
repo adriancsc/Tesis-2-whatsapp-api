@@ -81,6 +81,120 @@ async def product_detail_page():
     return FileResponse("frontend/product-detail.html")
 
 
+@app.get("/checkout", tags=["Frontend"])
+async def checkout_page():
+    """Servir página de checkout con pasarela Izipay simulada"""
+    return FileResponse("frontend/checkout.html")
+
+
+@app.get("/order-success", tags=["Frontend"])
+async def order_success_page():
+    """Servir página de confirmación de orden exitosa"""
+    return FileResponse("frontend/order-success.html")
+
+
+# ============= Webhook E-Commerce (Izipay Simulado → MAS) =============
+
+@app.post("/webhook/ecommerce", tags=["Webhooks"])
+async def webhook_ecommerce(request: Request):
+    """
+    Endpoint webhook que recibe órdenes del E-Commerce (Izipay simulado).
+    
+    Activa el flujo MAS:
+    START → SyncAgent (Inbound) → CoordinatorAgent → AlertAgent/END
+    
+    Payload esperado:
+        order_id: str
+        variant_sku: str
+        quantity: int
+        payment_status: str ("approved")
+        payment_method: str
+        customer: dict (opcional)
+        total_amount: float (opcional)
+    """
+    try:
+        payload = await request.json()
+        logger.info(f"🌐 Webhook E-Commerce recibido | Orden: {payload.get('order_id', 'UNKNOWN')}")
+
+        # Validar campos obligatorios
+        order_id = payload.get("order_id")
+        variant_sku = payload.get("variant_sku")
+        quantity = payload.get("quantity", 1)
+        payment_status = payload.get("payment_status", "")
+
+        if not variant_sku:
+            raise HTTPException(status_code=400, detail="variant_sku es requerido")
+
+        if payment_status != "approved":
+            logger.warning(f"Pago no aprobado para orden {order_id}: {payment_status}")
+            return JSONResponse({"status": "ignored", "reason": "payment_not_approved"}, status_code=200)
+
+        # Construir el estado inicial para el MAS
+        initial_state: MASState = {
+            "source": "ecommerce",
+            "vendor_phone": "ECOMMERCE",
+            "raw_text": str(quantity),
+            "current_step": "ECOMMERCE_ORDER",
+            "action": "sell_web",
+            "product_sku": None,
+            "product_name": None,
+            "variant_id": None,
+            "variant_sku": variant_sku,
+            "size": None,
+            "quantity": int(quantity),
+            "response_text": "",
+            "requires_coordinator": False,
+            "requires_sync": False,
+            "requires_alert": False,
+            "conflict_detected": False,
+            "operation_success": False,
+            "size_options": None,
+            "messages": [],
+            "ecommerce_order_id": order_id,
+            "ecommerce_action": "sell_web",
+        }
+
+        from langchain_core.runnables import RunnableConfig
+        config: RunnableConfig = {"configurable": {"thread_id": f"ecom-{order_id}"}}
+
+        # Invocar el grafo MAS de forma asíncrona
+        import asyncio
+        loop = asyncio.get_event_loop()
+        result = await loop.run_in_executor(None, lambda: mas_app.invoke(initial_state, config))
+
+        success = result.get("operation_success", False)
+        conflict = result.get("conflict_detected", False)
+
+        if conflict:
+            logger.warning(f"⚔️ Conflicto de stock para orden {order_id}")
+            return JSONResponse({
+                "status": "conflict",
+                "order_id": order_id,
+                "detail": "Stock insuficiente. El producto fue comprado simultáneamente."
+            }, status_code=409)
+
+        if success:
+            logger.info(f"✅ Orden {order_id} procesada exitosamente por el MAS")
+            return JSONResponse({
+                "status": "processed",
+                "order_id": order_id,
+                "message": result.get("response_text", "Venta web registrada exitosamente")
+            }, status_code=200)
+
+        logger.error(f"❌ El MAS no pudo procesar la orden {order_id}")
+        return JSONResponse({
+            "status": "error",
+            "order_id": order_id,
+            "detail": result.get("response_text", "Error interno del sistema")
+        }, status_code=422)
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Error en webhook ecommerce: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.get("/health", tags=["Health"])
 async def health_check():
     """Health check detallado"""

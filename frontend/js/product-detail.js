@@ -1,11 +1,95 @@
 /**
  * Product Detail Page JavaScript
- * Handles product detail display and interactions with variants
+ * Handles product detail display, cart management, and checkout flow
  */
 
 const API_BASE_URL = 'http://localhost:8000/api';
 let currentProduct = null;
 let selectedVariant = null;
+
+// ===== CARRITO (localStorage) =====
+function getCart() {
+    return JSON.parse(localStorage.getItem('gamarra_cart') || '[]');
+}
+
+function saveCart(cart) {
+    localStorage.setItem('gamarra_cart', JSON.stringify(cart));
+    updateCartBadge();
+}
+
+function updateCartBadge() {
+    const cart = getCart();
+    const total = cart.reduce((sum, item) => sum + item.quantity, 0);
+    const badge = document.getElementById('cartBadge');
+    if (badge) {
+        badge.textContent = total;
+        badge.style.display = total > 0 ? 'flex' : 'none';
+    }
+}
+
+function addToCart() {
+    if (!selectedVariant || selectedVariant.stock_total === 0) return;
+
+    const quantity = parseInt(document.getElementById('quantityInput').value) || 1;
+    const cart = getCart();
+
+    const existingIndex = cart.findIndex(i => i.variant_sku === selectedVariant.sku);
+    if (existingIndex >= 0) {
+        const newQty = cart[existingIndex].quantity + quantity;
+        cart[existingIndex].quantity = Math.min(newQty, selectedVariant.stock_total);
+    } else {
+        cart.push({
+            product_sku: currentProduct.sku,
+            variant_sku: selectedVariant.sku,
+            name: currentProduct.name,
+            size: selectedVariant.size,
+            price: currentProduct.base_price,
+            quantity: quantity,
+            max_stock: selectedVariant.stock_total,
+            emoji: getProductEmoji(currentProduct.category)
+        });
+    }
+
+    saveCart(cart);
+    showToast(`✅ ${currentProduct.name} (Talla ${selectedVariant.size}) agregado al carrito`);
+}
+
+function buyNow() {
+    if (!selectedVariant || selectedVariant.stock_total === 0) return;
+    addToCart();
+    window.location.href = '/checkout';
+}
+
+function getProductEmoji(category) {
+    const map = { 'Polos': '👕', 'Pantalones': '👖', 'Camisas': '👔', 'Accesorios': '🎩' };
+    return map[category] || '📦';
+}
+
+function showToast(message) {
+    let toast = document.getElementById('cartToast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'cartToast';
+        toast.style.cssText = `
+            position: fixed; bottom: 2rem; right: 2rem; z-index: 9999;
+            background: #2C2C2C; color: white; padding: 1rem 1.5rem;
+            border-radius: 8px; font-family: Poppins, sans-serif;
+            font-size: 0.95rem; font-weight: 500;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            transform: translateY(100px); opacity: 0;
+            transition: all 0.3s ease; max-width: 320px;
+            display: flex; align-items: center; gap: 0.75rem;
+        `;
+        document.body.appendChild(toast);
+    }
+    toast.innerHTML = message + ' <a href="/checkout" style="color:#0099FF;margin-left:0.5rem;font-weight:700;">Ver carrito →</a>';
+    toast.style.transform = 'translateY(0)';
+    toast.style.opacity = '1';
+    setTimeout(() => {
+        toast.style.transform = 'translateY(100px)';
+        toast.style.opacity = '0';
+    }, 3500);
+}
 
 // ===== INICIALIZACIÓN =====
 document.addEventListener('DOMContentLoaded', () => {
@@ -206,13 +290,15 @@ function renderProductDetail(product) {
                 
                 <!-- Actions -->
                 <div class="product-actions">
-                    <button class="btn-add-to-cart" ${!hasStock ? 'disabled' : ''} id="btnAddToCart">
-                        ${hasStock ? 'Agregar al carrito' : 'Agotado'}
+                    <button class="btn-add-to-cart" ${!hasStock ? 'disabled' : ''} id="btnAddToCart" onclick="addToCart()">
+                        ${hasStock ? '🛒 Agregar al carrito' : '❌ Agotado'}
                     </button>
-                    
+                    <button class="btn-buy-now" ${!hasStock ? 'disabled' : ''} id="btnBuyNow" onclick="buyNow()">
+                        ⚡ Comprar ahora
+                    </button>
                     <div class="cmr-promo">
-                        <div class="cmr-promo-title">¡COMPRA CON TU CMR VISA Y ACUMULA CMR PUNTOS!</div>
-                        <div class="cmr-promo-text">Pídela ahora desde S/ 200 en Fabahella</div>
+                        <div class="cmr-promo-title">💳 Pago 100% seguro con Izipay</div>
+                        <div class="cmr-promo-text">Acepta tarjetas Visa, Mastercard y Yape</div>
                     </div>
                 </div>
             </div>
@@ -265,6 +351,7 @@ function renderProductDetail(product) {
 
     // Setup event listeners
     setupQuantityControls();
+    updateCartBadge();
 }
 
 // ===== CONTROLES DE CANTIDAD =====

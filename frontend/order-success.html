@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>¡Pedido Confirmado! | Gamarra Store</title>
+    <link rel="stylesheet" href="/static/css/store.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .success-container {
+            max-width: 680px;
+            margin: 3rem auto;
+            padding: 0 1.5rem;
+            text-align: center;
+        }
+
+        .success-icon {
+            font-size: 5rem;
+            animation: popIn 0.6s ease;
+            margin-bottom: 1.5rem;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            70% { transform: scale(1.2); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .success-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2C2C2C;
+            margin-bottom: 0.75rem;
+        }
+
+        .success-subtitle {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        .order-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+
+        .order-id {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .order-id span {
+            font-weight: 700;
+            color: #0099FF;
+            font-family: monospace;
+            font-size: 0.95rem;
+        }
+
+        .mas-badge {
+            background: linear-gradient(135deg, #0099FF, #0066CC);
+            color: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .mas-badge h3 {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .mas-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .mas-step {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.9rem;
+            background: rgba(255,255,255,0.15);
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+        }
+
+        .order-items-title {
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+        }
+
+        .order-item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #F0F0F0;
+            font-size: 0.95rem;
+        }
+
+        .order-item-row:last-child { border-bottom: none; }
+
+        .order-total-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #0099FF;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 2px solid #E0E0E0;
+        }
+
+        .btn-back-store {
+            display: inline-block;
+            padding: 1rem 2.5rem;
+            background: #0099FF;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 1rem;
+            margin-top: 1rem;
+            transition: all 0.3s;
+        }
+
+        .btn-back-store:hover {
+            background: #0066CC;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,153,255,0.3);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="container-fluid">
+            <p>✅ ¡Tu pedido fue procesado y el inventario actualizado en tiempo real!</p>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="main-header">
+        <div class="container-fluid">
+            <div class="header-content">
+                <div class="logo">
+                    <a href="/store" style="text-decoration: none; color: inherit;">
+                        <h1>🛍️ GAMARRA</h1>
+                        <p>Store Online</p>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="success-container">
+            <div class="success-icon">🎉</div>
+            <h1 class="success-title">¡Pedido confirmado!</h1>
+            <p class="success-subtitle" id="customerGreeting">Gracias por tu compra. Recibirás un correo con los detalles.</p>
+
+            <!-- Badge MAS (Diferenciador de Tesis) -->
+            <div class="mas-badge">
+                <h3>⚡ Sistema Multiagente MAS activado</h3>
+                <p style="font-size:0.85rem; opacity:0.9;">Tu compra activó el siguiente flujo automático:</p>
+                <div class="mas-steps">
+                    <div class="mas-step">✅ Webhook recibido por la Pasarela de Comunicaciones</div>
+                    <div class="mas-step">✅ Agente de Sincronización (Inbound) procesó tu orden</div>
+                    <div class="mas-step">✅ Agente Coordinador descontó el stock del Kárdex</div>
+                    <div class="mas-step">✅ Agente de Alertas notificó al vendedor vía WhatsApp</div>
+                </div>
+            </div>
+
+            <!-- Detalle de la orden -->
+            <div class="order-card">
+                <div class="order-id">N° de orden: <span id="orderId">—</span></div>
+                <div class="order-items-title">📦 Productos comprados</div>
+                <div id="orderItemsList">—</div>
+                <div class="order-total-row">
+                    <span>Total pagado</span>
+                    <span id="orderTotal">S/ 0.00</span>
+                </div>
+            </div>
+
+            <a href="/store" class="btn-back-store">🛍️ Seguir comprando</a>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Leer orden de sessionStorage
+            const orderData = JSON.parse(sessionStorage.getItem('last_order') || '{}');
+
+            if (orderData.order_id) {
+                document.getElementById('orderId').textContent = orderData.order_id;
+                document.getElementById('orderTotal').textContent = `S/ ${(orderData.total || 0).toFixed(2)}`;
+
+                if (orderData.customer_name) {
+                    document.getElementById('customerGreeting').textContent =
+                        `Gracias, ${orderData.customer_name}. Recibirás un correo con los detalles de tu pedido.`;
+                }
+
+                if (orderData.items && orderData.items.length > 0) {
+                    document.getElementById('orderItemsList').innerHTML = orderData.items.map(item => `
+                        <div class="order-item-row">
+                            <span>${item.emoji || '📦'} ${item.name} — Talla ${item.size} × ${item.quantity}</span>
+                            <span>S/ ${(item.price * item.quantity).toFixed(2)}</span>
+                        </div>
+                    `).join('');
+                }
+            } else {
+                // Si no hay datos de orden (acceso directo), tomar de la URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const orderId = urlParams.get('order_id');
+                if (orderId) {
+                    document.getElementById('orderId').textContent = orderId;
+                }
+            }
+
+            // Limpiar session
+            sessionStorage.removeItem('last_order');
+        });
+    </script>
+</body>
+
+</html>

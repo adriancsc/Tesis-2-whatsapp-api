@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout | Gamarra Store</title>
+    <meta name="description" content="Finaliza tu compra de forma segura - Gamarra Store">
+    <link rel="stylesheet" href="/static/css/store.css">
+    <link rel="stylesheet" href="/static/css/checkout.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="container-fluid">
+            <p>🔒 Checkout Seguro — Tus datos están protegidos con cifrado SSL</p>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="main-header">
+        <div class="container-fluid">
+            <div class="header-content">
+                <div class="logo">
+                    <a href="/store" style="text-decoration: none; color: inherit;">
+                        <h1>🛍️ GAMARRA</h1>
+                        <p>Store Online</p>
+                    </a>
+                </div>
+                <div class="checkout-steps">
+                    <div class="step active">1. Carrito</div>
+                    <div class="step-arrow">›</div>
+                    <div class="step active">2. Datos</div>
+                    <div class="step-arrow">›</div>
+                    <div class="step" id="stepPago">3. Pago</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container-fluid">
+            <div class="checkout-grid">
+
+                <!-- Columna Izquierda: Formulario -->
+                <div class="checkout-form-col">
+
+                    <!-- Resumen del Carrito -->
+                    <div class="checkout-card" id="cartSummarySection">
+                        <h2 class="card-title">🛒 Tu pedido</h2>
+                        <div id="cartItemsList">
+                            <!-- Renderizado por JS -->
+                        </div>
+                        <div class="cart-empty-msg" id="cartEmpty" style="display:none;">
+                            <p>Tu carrito está vacío. <a href="/store">Volver a la tienda</a></p>
+                        </div>
+                    </div>
+
+                    <!-- Datos del Cliente -->
+                    <div class="checkout-card">
+                        <h2 class="card-title">📋 Datos de contacto</h2>
+                        <form id="checkoutForm" onsubmit="return false;">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="firstName">Nombre *</label>
+                                    <input type="text" id="firstName" placeholder="Juan" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="lastName">Apellido *</label>
+                                    <input type="text" id="lastName" placeholder="Pérez" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Correo electrónico *</label>
+                                <input type="email" id="email" placeholder="juan@correo.com" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="phone">Celular *</label>
+                                <input type="tel" id="phone" placeholder="+51 999 999 999" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="address">Dirección de envío *</label>
+                                <input type="text" id="address" placeholder="Av. Los Álamos 123, San Isidro" required>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="district">Distrito *</label>
+                                    <input type="text" id="district" placeholder="Miraflores" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="city">Ciudad</label>
+                                    <input type="text" id="city" placeholder="Lima" value="Lima">
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Columna Derecha: Resumen + Pago -->
+                <div class="checkout-summary-col">
+
+                    <!-- Resumen de Precio -->
+                    <div class="checkout-card order-summary-card">
+                        <h2 class="card-title">📦 Resumen del pedido</h2>
+                        <div class="summary-lines" id="summaryLines">
+                            <!-- Renderizado por JS -->
+                        </div>
+                        <div class="summary-divider"></div>
+                        <div class="summary-total">
+                            <span>TOTAL A PAGAR</span>
+                            <span id="summaryTotal">S/ 0.00</span>
+                        </div>
+                        <div class="shipping-info">
+                            🚚 Envío a calcular al confirmar
+                        </div>
+                    </div>
+
+                    <!-- Botón de Pago -->
+                    <div class="checkout-card payment-card">
+                        <h2 class="card-title">💳 Método de pago</h2>
+                        
+                        <!-- Selector de método -->
+                        <div class="payment-methods">
+                            <div class="payment-method active" id="methodCard" onclick="selectPaymentMethod('card')">
+                                <span class="method-icon">💳</span>
+                                <span>Tarjeta de crédito/débito</span>
+                                <span class="method-badge">Visa / Mastercard</span>
+                            </div>
+                            <div class="payment-method" id="methodYape" onclick="selectPaymentMethod('yape')">
+                                <span class="method-icon">📱</span>
+                                <span>Yape / Plin</span>
+                            </div>
+                        </div>
+
+                        <!-- Formulario de tarjeta (Izipay simulado) -->
+                        <div class="izipay-form" id="cardForm">
+                            <div class="izipay-header">
+                                <img src="https://www.izipay.pe/img/logo-izipay.svg" 
+                                     alt="Izipay" 
+                                     style="height:28px;"
+                                     onerror="this.style.display='none'; document.getElementById('izipayFallback').style.display='block'">
+                                <span id="izipayFallback" style="display:none; font-weight:700; color:#E30613;">Izipay</span>
+                                <span class="secure-badge">🔒 Pago Seguro</span>
+                            </div>
+                            <div class="form-group">
+                                <label>Número de tarjeta</label>
+                                <input type="text" id="cardNumber" placeholder="4111 1111 1111 1111" 
+                                       maxlength="19" oninput="formatCardNumber(this)">
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Vencimiento</label>
+                                    <input type="text" id="cardExpiry" placeholder="MM/AA" maxlength="5" oninput="formatExpiry(this)">
+                                </div>
+                                <div class="form-group">
+                                    <label>CVV</label>
+                                    <input type="text" id="cardCvv" placeholder="123" maxlength="4">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Nombre en la tarjeta</label>
+                                <input type="text" id="cardName" placeholder="JUAN PEREZ">
+                            </div>
+                        </div>
+
+                        <!-- Formulario Yape -->
+                        <div class="yape-form" id="yapeForm" style="display:none;">
+                            <div class="yape-qr">
+                                <div class="qr-placeholder">📱</div>
+                                <p>Escanea el QR con Yape o Plin</p>
+                                <p class="yape-amount" id="yapeAmount">S/ 0.00</p>
+                            </div>
+                        </div>
+
+                        <!-- Botón Pagar -->
+                        <button class="btn-pay" id="btnPay" onclick="procesarPago()">
+                            🔒 Pagar ahora — <span id="btnPayTotal">S/ 0.00</span>
+                        </button>
+                        <p class="pay-disclaimer">
+                            Al pagar, aceptas nuestros Términos y Condiciones. 
+                            Tu compra activa el Sistema MAS de sincronización en tiempo real.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal de Procesamiento (Izipay Simulado) -->
+    <div class="payment-modal" id="paymentModal" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-step" id="modalStep1">
+                <div class="modal-spinner"></div>
+                <h3>Conectando con Izipay...</h3>
+                <p>Verificando datos de tu tarjeta</p>
+            </div>
+            <div class="modal-step" id="modalStep2" style="display:none;">
+                <div class="modal-spinner"></div>
+                <h3>Autorizando pago...</h3>
+                <p>Tu banco está procesando la transacción</p>
+            </div>
+            <div class="modal-step" id="modalStep3" style="display:none;">
+                <div class="modal-spinner"></div>
+                <h3>Notificando al sistema...</h3>
+                <p>Actualizando inventario en tiempo real (MAS)</p>
+            </div>
+            <div class="modal-step" id="modalStep4" style="display:none;">
+                <div class="modal-icon-success">✅</div>
+                <h3>¡Pago exitoso!</h3>
+                <p>Redirigiendo a tu confirmación...</p>
+            </div>
+            <div class="modal-step" id="modalStepError" style="display:none;">
+                <div class="modal-icon-error">❌</div>
+                <h3>Error en el pago</h3>
+                <p id="modalErrorMsg">No se pudo procesar el pago. Intenta de nuevo.</p>
+                <button onclick="closeModal()" class="btn-retry">Reintentar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/checkout.js"></script>
+</body>
+
+</html>
