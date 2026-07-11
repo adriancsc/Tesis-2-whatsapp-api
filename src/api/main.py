@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, PlainTextResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from typing import List, Optional
 from datetime import datetime, timedelta
 
@@ -577,16 +578,16 @@ async def whatsapp_webhook_alias(request: Request):
 @app.get("/api/dashboard/stats", response_model=DashboardStats, tags=["Dashboard"])
 async def get_dashboard_stats(db: Session = Depends(get_db_session)):
     """Obtener estadísticas para el dashboard"""
-    total_products = db.query(Product).count()
-    total_stock = db.query(Product).with_entities(
-        db.func.sum(Product.stock_total)
-    ).scalar() or 0
+    from src.database.models import ProductVariant
     
-    low_stock_products = db.query(Product).filter(Product.stock_total < 5).count()
+    total_products = db.query(Product).count()
+    total_stock = db.query(func.sum(ProductVariant.stock_total)).scalar() or 0
+    
+    low_stock_products = db.query(ProductVariant).filter(ProductVariant.stock_total < 5).count()
     
     today = datetime.utcnow().date()
     transactions_today = db.query(Transaction).filter(
-        db.func.date(Transaction.created_at) == today
+        func.date(Transaction.created_at) == today
     ).count()
     
     active_sessions = db.query(ChatSession).filter(

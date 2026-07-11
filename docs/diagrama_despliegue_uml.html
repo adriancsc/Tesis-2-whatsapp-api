@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagrama de Despliegue UML — Sistema MAS-CIS</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            background: #ffffff;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+        .page { width: 920px; }
+        .title { text-align: center; font-size: 15px; font-weight: 700; color: #1e293b; margin-bottom: 22px; }
+
+        .node { border: 2px solid #475569; border-radius: 3px; background: #f8fafc; position: relative; padding: 10px; }
+        .node::before { content: ''; position: absolute; top: -2px; right: 10px; width: 18px; height: 12px; border: 2px solid #475569; border-top: none; background: #f8fafc; clip-path: polygon(0% 0%, 80% 0%, 100% 100%, 0% 100%); }
+
+        .cloud { border-style: dashed; border-radius: 10px; }
+        .cloud::before { display: none; }
+        .cloud-green { border-color: #16a34a; background: #f0fdf4; }
+        .cloud-blue { border-color: #3b82f6; background: #eff6ff; }
+        .cloud-purple { border-color: #8b5cf6; background: #f5f3ff; }
+
+        .comp { border: 1.5px solid #6366f1; border-radius: 2px; background: #ffffff; padding: 5px 8px 5px 14px; position: relative; text-align: center; }
+        .comp::before, .comp::after { content: ''; position: absolute; left: -7px; width: 10px; height: 5px; border: 1.5px solid #6366f1; background: #fff; border-radius: 1px; }
+        .comp::before { top: 6px; }
+        .comp::after { top: 16px; }
+
+        .artifact { border: 1.5px solid #64748b; background: #fff; padding: 6px 10px; text-align: center; position: relative; }
+        .artifact::before { content: ''; position: absolute; top: -1.5px; right: -1.5px; width: 10px; height: 10px; background: linear-gradient(225deg, #f8fafc 50%, #64748b 50%); }
+
+        .st { font-size: 9px; color: #64748b; font-style: italic; text-align: center; }
+        .nm { font-size: 11.5px; font-weight: 600; color: #1e293b; text-align: center; line-height: 1.3; }
+        .nm-sm { font-size: 10.5px; font-weight: 500; color: #475569; text-align: center; }
+        .dt { font-size: 9px; color: #64748b; text-align: center; }
+        .lbl { font-size: 9px; color: #64748b; font-style: italic; text-align: center; line-height: 1.25; }
+
+        .row { display: flex; justify-content: center; align-items: flex-start; gap: 50px; }
+        .col-c { display: flex; flex-direction: column; align-items: center; }
+
+        .atag { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 8.5px; font-weight: 600; margin: 1px; }
+        .atag-g { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+        .atag-y { background: #fef9c3; color: #854d0e; border: 1px solid #fde047; }
+        .atag-r { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+
+        /* ======= PROPER ARROW LINES ======= */
+        .arrow-path {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .line { margin: 0 auto; }
+        .line-solid { width: 2px; background: #475569; }
+        .line-dash-blue { width: 0; border-left: 2.5px dashed #3b82f6; }
+        .line-solid-green { width: 2.5px; background: #16a34a; }
+        .arw { width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; margin: 0 auto; }
+        .arw-gray { border-top: 8px solid #475569; }
+        .arw-blue { border-top: 8px solid #3b82f6; }
+        .arw-green { border-top: 8px solid #16a34a; }
+        .arw-red { border-top: 8px solid #ef4444; }
+        .lbl-on-line {
+            font-size: 8.5px; color: #64748b; font-style: italic; text-align: center;
+            padding: 1px 4px; background: #fff; position: relative; z-index: 1;
+        }
+        .lbl-blue { color: #3b82f6; font-weight: 500; }
+        .lbl-green { color: #16a34a; font-weight: 500; }
+
+        /* ======= NOTE ======= */
+        .note { border: 1.5px solid #fbbf24; background: #fffbeb; padding: 9px 12px; font-size: 9.5px; color: #78350f; line-height: 1.5; max-width: 520px; margin: 14px auto 0; position: relative; }
+        .note::before { content: ''; position: absolute; top: -1.5px; right: -1.5px; width: 12px; height: 12px; background: linear-gradient(225deg, #fff 50%, #fbbf24 50%); }
+        .note b { color: #92400e; }
+
+        @media print { body { padding: 10px; } }
+    </style>
+</head>
+<body>
+<div class="page">
+
+    <div class="title">Diagrama de Despliegue UML — Sistema MAS-CIS (Arquitectura Desacoplada)</div>
+
+    <!-- ===== ROW 1: DEVICES ===== -->
+    <div class="row">
+        <div class="node" style="width: 170px;">
+            <div class="st">«device»</div>
+            <div class="nm">Dispositivo Móvil</div>
+            <div class="comp" style="margin-top: 7px;"><div class="st">«application»</div><div class="nm-sm">WhatsApp App</div></div>
+        </div>
+        <div class="node" style="width: 170px;">
+            <div class="st">«device»</div>
+            <div class="nm">Dispositivo Cliente</div>
+            <div class="comp" style="margin-top: 7px;"><div class="st">«application»</div><div class="nm-sm">Navegador Web</div></div>
+        </div>
+    </div>
+
+    <!-- ARROW: Devices → Clouds -->
+    <div class="row" style="align-items: center;">
+        <div class="arrow-path" style="width: 170px;">
+            <div class="line line-solid" style="height: 12px;"></div>
+            <div class="lbl-on-line">Red Celular / 4G</div>
+            <div class="line line-solid" style="height: 12px;"></div>
+            <div class="arw arw-gray"></div>
+        </div>
+        <div class="arrow-path" style="width: 170px;">
+            <div class="line line-solid" style="height: 12px;"></div>
+            <div class="lbl-on-line">HTTP / HTTPS</div>
+            <div class="line line-solid" style="height: 12px;"></div>
+            <div class="arw arw-gray"></div>
+        </div>
+    </div>
+
+    <!-- ===== ROW 2: EXTERNAL CLOUDS ===== -->
+    <div class="row">
+        <div class="node cloud cloud-blue" style="width: 210px; padding: 10px;">
+            <div class="st">«cloud»</div>
+            <div class="nm" style="font-size: 11px;">Infraestructura Meta</div>
+            <div class="node" style="margin-top: 8px; padding: 8px; border-color: #64748b; background: #fff;">
+                <div class="st">«server»</div>
+                <div class="nm-sm">Servidores WhatsApp</div>
+                <div class="comp" style="margin-top: 5px;"><div class="st">«service»</div><div class="nm-sm" style="font-size: 10px;">WhatsApp Business API</div></div>
+            </div>
+        </div>
+        <div class="node cloud cloud-purple" style="width: 210px; padding: 10px;">
+            <div class="st">«cloud»</div>
+            <div class="nm" style="font-size: 11px;">Nube del Portal Web</div>
+            <div class="node" style="margin-top: 8px; padding: 8px; border-color: #64748b; background: #fff;">
+                <div class="st">«server»</div>
+                <div class="nm-sm">Servidor Web Externo</div>
+                <div class="comp" style="margin-top: 5px;"><div class="st">«application»</div><div class="nm-sm" style="font-size: 10px;">Portal de Ventas Web</div></div>
+            </div>
+            <div style="margin-top: 8px; text-align: center;">
+                <svg width="130" height="44" viewBox="0 0 130 44">
+                    <ellipse cx="65" cy="9" rx="63" ry="9" fill="#fff" stroke="#8b5cf6" stroke-width="1.5"/>
+                    <rect x="2" y="9" width="126" height="24" fill="#fff" stroke="none"/>
+                    <line x1="2" y1="9" x2="2" y2="33" stroke="#8b5cf6" stroke-width="1.5"/>
+                    <line x1="128" y1="9" x2="128" y2="33" stroke="#8b5cf6" stroke-width="1.5"/>
+                    <ellipse cx="65" cy="33" rx="63" ry="9" fill="#fff" stroke="#8b5cf6" stroke-width="1.5"/>
+                    <text x="65" y="26" text-anchor="middle" font-size="9.5" font-weight="600" fill="#1e293b" font-family="Inter, sans-serif">BD Web</text>
+                </svg>
+                <div class="dt">(Catálogo y Stock Virtual)</div>
+                <div class="lbl" style="margin-top: 2px;">↑ «SQL Interno»</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ARROW: Clouds → Railway (CONTINUOUS LINES) -->
+    <div class="row" style="align-items: center; margin-top: -2px; margin-bottom: -4px;">
+        <div class="arrow-path" style="width: 210px;">
+            <div class="line line-dash-blue" style="height: 28px;"></div>
+            <div class="lbl-on-line lbl-blue">Webhooks (HTTP/JSON)</div>
+            <div class="line line-dash-blue" style="height: 24px;"></div>
+            <div class="arw arw-blue"></div>
+        </div>
+        <div class="arrow-path" style="width: 210px;">
+            <div class="line line-dash-blue" style="height: 28px;"></div>
+            <div class="lbl-on-line lbl-blue">Webhook de Compra (HTTP/POST)</div>
+            <div class="line line-dash-blue" style="height: 24px;"></div>
+            <div class="arw arw-blue"></div>
+        </div>
+    </div>
+
+    <!-- ===== ROW 3: RAILWAY ===== -->
+    <div class="node cloud cloud-green" style="width: 780px; margin: 0 auto; padding: 14px;">
+        <div class="st">«cloud»</div>
+        <div class="nm" style="font-size: 13px;">Nube de Despliegue — Railway</div>
+
+        <!-- Backend Server -->
+        <div class="node" style="width: 100%; margin-top: 10px; padding: 12px; border-color: #64748b;">
+            <div class="st">«execution environment»</div>
+            <div class="nm">Servidor Backend</div>
+
+            <!-- Runtime -->
+            <div style="border: 1.5px dashed #94a3b8; border-radius: 4px; padding: 10px 14px; margin-top: 8px; position: relative;">
+                <div style="position: absolute; top: -8px; left: 12px; background: #f8fafc; padding: 0 5px; font-size: 9px; color: #64748b; font-style: italic;">«runtime» Python 3.11 + Uvicorn</div>
+
+                <!-- === FASTAPI ON TOP (Pasarela) === -->
+                <div style="display: flex; justify-content: center; margin-top: 8px;">
+                    <div class="artifact" style="width: 380px; border-color: #6366f1;">
+                        <div class="st" style="color: #6366f1;">«artifact»</div>
+                        <div class="nm-sm" style="font-size: 11.5px; font-weight: 700;">Aplicación FastAPI — Pasarela de Comunicaciones</div>
+                        <div class="dt">main.py — API REST + Webhooks</div>
+                        <div class="dt">whatsapp_gateway.py + message_router.py</div>
+                        <div class="dt" style="margin-top: 2px; font-weight: 600; color: #475569;">Puerto: 8000</div>
+                    </div>
+                </div>
+
+                <!-- ARROW: FastAPI → MAS -->
+                <div class="arrow-path" style="margin: 0 auto;">
+                    <div class="line line-solid-green" style="height: 10px;"></div>
+                    <div class="lbl-on-line lbl-green">Invoca Grafo (StateGraph)</div>
+                    <div class="line line-solid-green" style="height: 10px;"></div>
+                    <div class="arw arw-green"></div>
+                </div>
+
+                <!-- === MAS BELOW (LangGraph) === -->
+                <div style="display: flex; justify-content: center;">
+                    <div class="artifact" style="width: 420px; border-color: #f59e0b; background: #fffbeb;">
+                        <div class="st" style="color: #d97706;">«artifact»</div>
+                        <div class="nm-sm" style="font-size: 11.5px; font-weight: 700;">Sistema Multiagente MAS-CIS</div>
+                        <div class="dt">mas_orchestrator.py — LangGraph StateGraph</div>
+                        <div style="margin-top: 5px; display: flex; justify-content: center; gap: 4px; flex-wrap: wrap;">
+                            <span class="atag atag-g">StoreAgent</span>
+                            <span class="atag atag-g">SyncAgent</span>
+                            <span class="atag atag-y">CoordinatorAgent</span>
+                            <span class="atag atag-r">AlertAgent</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin-top: 6px;">
+                    <div class="dt" style="color: #94a3b8; font-size: 8.5px;">Comunicación interna: invocación en memoria (mismo proceso Python)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ARROW: Backend → DB -->
+        <div class="arrow-path" style="margin: 0 auto;">
+            <div class="line line-solid-green" style="height: 10px;"></div>
+            <div class="lbl-on-line lbl-green">SQLAlchemy</div>
+            <div class="line line-solid-green" style="height: 10px;"></div>
+            <div class="arw arw-green"></div>
+        </div>
+
+        <!-- DB Server -->
+        <div class="node" style="width: 280px; margin: 0 auto; padding: 10px; border-color: #64748b; background: #fff;">
+            <div class="st">«execution environment»</div>
+            <div class="nm" style="font-size: 11px;">Servicio de Base de Datos</div>
+            <div style="margin-top: 8px; text-align: center;">
+                <svg width="180" height="52" viewBox="0 0 180 52">
+                    <ellipse cx="90" cy="10" rx="88" ry="10" fill="#fff" stroke="#ef4444" stroke-width="1.5"/>
+                    <rect x="2" y="10" width="176" height="28" fill="#fff" stroke="none"/>
+                    <line x1="2" y1="10" x2="2" y2="38" stroke="#ef4444" stroke-width="1.5"/>
+                    <line x1="178" y1="10" x2="178" y2="38" stroke="#ef4444" stroke-width="1.5"/>
+                    <ellipse cx="90" cy="38" rx="88" ry="10" fill="#fff" stroke="#ef4444" stroke-width="1.5"/>
+                    <text x="90" y="22" text-anchor="middle" font-size="10" font-weight="600" fill="#1e293b" font-family="Inter, sans-serif">BD Kárdex Automatizado</text>
+                    <text x="90" y="35" text-anchor="middle" font-size="8.5" fill="#64748b" font-family="Inter, sans-serif">PostgreSQL (SSOT)</text>
+                </svg>
+            </div>
+        </div>
+    </div><!-- End Railway -->
+
+    <!-- ===== OUTBOUND CONNECTIONS (arrows pointing up) ===== -->
+    <div style="display: flex; justify-content: space-between; margin-top: 12px; padding: 0 20px;">
+        <!-- Alert → WABA -->
+        <div style="text-align: center; width: 250px;">
+            <div style="display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 3px;">
+                <svg width="30" height="16"><line x1="0" y1="8" x2="24" y2="8" stroke="#ef4444" stroke-width="2" stroke-dasharray="4,3"/><polygon points="24,4 30,8 24,12" fill="#ef4444"/></svg>
+                <span style="font-size: 9px; color: #ef4444; font-weight: 600;">hacia Infraestructura Meta</span>
+            </div>
+            <div style="border: 1.5px dashed #f87171; border-radius: 4px; padding: 5px 8px; background: #fef2f2;">
+                <div class="lbl" style="color: #dc2626; font-weight: 600; font-size: 9.5px;">Notificación Proactiva de Stock</div>
+                <div class="dt">AlertAgent → WhatsApp Business API</div>
+                <div class="dt" style="color: #94a3b8;">«HTTP/JSON» vía Meta Graph API</div>
+            </div>
+        </div>
+        <!-- Sync → BD Web -->
+        <div style="text-align: center; width: 250px;">
+            <div style="display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 3px;">
+                <svg width="30" height="16"><line x1="0" y1="8" x2="24" y2="8" stroke="#16a34a" stroke-width="2" stroke-dasharray="4,3"/><polygon points="24,4 30,8 24,12" fill="#16a34a"/></svg>
+                <span style="font-size: 9px; color: #16a34a; font-weight: 600;">hacia Nube del Portal Web</span>
+            </div>
+            <div style="border: 1.5px dashed #22c55e; border-radius: 4px; padding: 5px 8px; background: #f0fdf4;">
+                <div class="lbl" style="color: #16a34a; font-weight: 600; font-size: 9.5px;">Actualización de Stock</div>
+                <div class="dt">SyncAgent (Outbound) → BD Web</div>
+                <div class="dt" style="color: #94a3b8;">«API REST» (simulado en prototipo)</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NOTE -->
+    <div class="note">
+        <b>📝 Nota — Alcance del Prototipo:</b> En el prototipo, la BD Kárdex Automatizado y la BD Web coexisten en una sola instancia. La conexión API REST del SyncAgent (Outbound) se simula para demostrar la arquitectura desacoplada. El Portal de Ventas Web (demo) lee directamente de la misma BD del sistema MAS.
+    </div>
+
+</div>
+</body>
+</html>

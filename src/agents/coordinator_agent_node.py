@@ -6,7 +6,7 @@ del Kárdex Digital y resolver conflictos de concurrencia.
 
 Propiedades MAS (Wooldridge & Jennings, 1995):
     - Autonomía:    Puede RECHAZAR solicitudes (refuse) si violan
-                    reglas de negocio. Aplica límite de 100 unidades
+                    reglas de negocio. Aplica límite de 1000 unidades
                     por transacción. Detecta anomalías autónomamente.
     - Reactividad:  Percibe el estado del Kárdex en cada operación
                     y reacciona a condiciones de stock bajo/agotado.
@@ -144,24 +144,24 @@ def _handle_stock_transaction(
     )
 
     # --- Autonomía: Límite por operación ---
-    if quantity and quantity > 100:
+    if quantity and quantity > 1000:
         refuse_msg = create_message(
             performative="refuse",
             sender=AGENT_NAME,
             receiver=sender,
             content={
                 "reason": "quantity_limit_exceeded",
-                "max_allowed": 100,
+                "max_allowed": 1000,
                 "requested": quantity,
             },
         )
-        logger.warning(f"🎯 CoordinatorAgent REFUSE: Cantidad {quantity} > 100")
+        logger.warning(f"🎯 CoordinatorAgent REFUSE: Cantidad {quantity} > 1000")
         return {
             "operation_success": False,
             "requires_alert": False,
             "response_text": (
                 f"⛔ *OPERACIÓN RECHAZADA (Agente Coordinador)*\n\n"
-                f"Por seguridad, no se permite procesar más de 100 unidades "
+                f"Por seguridad, no se permite procesar más de 1000 unidades "
                 f"en una sola transacción.\n"
                 f"Has solicitado {quantity} unidades.\n\n"
                 f"Escribe *menu* para volver y dividir la operación."
@@ -630,7 +630,7 @@ def _find_last_request(messages: list) -> Optional[dict]:
 def _check_merma_anomaly(variant_id: int, stock_total: int) -> Optional[dict]:
     """
     Detecta anomalías en mermas del día (Autonomía/Reactividad).
-    Si las mermas de hoy superan el 20% del stock total, es anómalo.
+    Si las mermas de hoy superan el 30% del stock total, es anómalo.
     """
     try:
         today_start = datetime.combine(date.today(), datetime.min.time())
@@ -644,10 +644,10 @@ def _check_merma_anomaly(variant_id: int, stock_total: int) -> Optional[dict]:
             ).scalar() or 0
 
         base = stock_total + removed_today
-        if base > 0 and removed_today >= (base * 0.2):
+        if base > 0 and removed_today >= (base * 0.3):
             return {
                 "removed_today": removed_today,
-                "threshold_pct": 20,
+                "threshold_pct": 30,
                 "message": (
                     f"Se han registrado {removed_today} unidades como merma hoy, "
                     f"lo cual es inusualmente alto."

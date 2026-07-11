@@ -196,10 +196,10 @@ Lee el último mensaje `request` de la cola y evalúa el campo `action`:
 
 **1. Límite estricto de cantidad (Hard Limit, primera validación):**
 ```python
-if quantity and quantity > 100:
-    # → Emite refuse con razón "quantity_limit_exceeded"
-    # Mensaje: "⛔ OPERACIÓN RECHAZADA — no se permite más de 100 unidades en una transacción"
-    # Muestra: max_allowed=100, requested=<cantidad pedida>
+if quantity and quantity > 1000:
+    # Retorna un 'refuse' por cantidad excedida
+    # Mensaje: "⛔ OPERACIÓN RECHAZADA — no se permite más de 1000 unidades en una transacción"
+    # Muestra: max_allowed=1000, requested=<cantidad pedida>
 ```
 
 **2. Adquisición de Lock de concurrencia (timeout=3.0 segundos):**
@@ -286,7 +286,7 @@ except TimeoutError:
 | Situación | Performative | Razón en `content` |
 |---|---|---|
 | Transacción exitosa | `inform` | `success=True`, `new_stock`, `stock_total`, `alert_data` |
-| Límite 100 superado | `refuse` | `quantity_limit_exceeded` |
+| Límite 1000 superado | `refuse` | `quantity_limit_exceeded` |
 | Variante no encontrada | `refuse` | `variant_not_found` |
 | Falla en validador | `refuse` | `validation_failed` |
 | Acción desconocida | `refuse` | `unknown_action` |

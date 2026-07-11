@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Diagrama de Casos de Uso — Sistema Multiagente</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            padding: 40px;
+            margin: 0;
+        }
+        svg {
+            background-color: #ffffff;
+            border: 1px solid #ced4da;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <svg width="1200" height="920" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#6c757d" />
+            </marker>
+        </defs>
+
+        <!-- ============================================ -->
+        <!-- CAJA DEL SISTEMA                             -->
+        <!-- ============================================ -->
+        <rect x="310" y="30" width="580" height="860" fill="none" stroke="#343a40" stroke-width="2"/>
+        <text x="600" y="62" font-size="17" font-weight="bold" font-family="Segoe UI, sans-serif" fill="#343a40" text-anchor="middle">Sistema Multiagente</text>
+
+        <!-- ============================================ -->
+        <!-- CASOS DE USO (12 óvalos)                     -->
+        <!-- Ordenados por grupo de actor para minimizar   -->
+        <!-- cruces de líneas                              -->
+        <!-- ============================================ -->
+        <!-- GRUPO VENDEDOR (arriba): CU-01..CU-03, CU-07, CU-08 -->
+        <ellipse cx="600" cy="110" rx="250" ry="24" fill="#fff" stroke="#28a745" stroke-width="2"/>
+        <text x="600" y="114" font-size="13" font-family="Segoe UI, sans-serif" fill="#212529" text-anchor="middle">CU-01: Registrar Venta Presencial vía WhatsApp</text>
+
+        <ellipse cx="600" cy="170" rx="250" ry="24" fill="#fff" stroke="#28a745" stroke-width="2"/>
+        <text x="600" y="174" font-size="13" font-family="Segoe UI, sans-serif" fill="#212529" text-anchor="middle">CU-02: Registrar Abastecimiento de Mercadería</text>
+
+        <ellipse cx="600" cy="230" rx="250" ry="24" fill="#fff" stroke="#28a745" stroke-width="2"/>
+        <text x="600" y="234" font-size="13" font-family="Segoe UI, sans-serif" fill="#212529" text-anchor="middle">CU-03: Registrar Merma vía WhatsApp</text>
+
+        <ellipse cx="600" cy="290" rx="250" ry="24" fill="#fff" stroke="#28a745" stroke-width="2"/>
+        <text x="600" y="294" font-size="13" font-family="Segoe UI, sans-serif" fill="#212529" text-anchor="middle">CU-07: Consultar Inventario</text>
+
+        <ellipse cx="600" cy="350" rx="250" ry="24" fill="#fff" stroke="#28a745" stroke-width="2"/>
+        <text x="600" y="354" font-size="13" font-family="Segoe UI, sans-serif" fill="#212529" text-anchor="middle">CU-08: Resumen Transaccional del Día</text>
+
+        <!-- GRUPO ALERTAS (medio): CU-09, CU-10, CU-11 — flechas HACIA vendedor -->
+        <ellipse cx="600" cy="420" rx="250" ry="24" fill="#fff" stroke="#28a745" stroke-width="2"/>
+        <text x="600" y="424" font-size="13" font-family="Segoe UI, sans-serif" fill="#212529" text-anchor="middle">CU-09: Alerta Proactiva de Stock Bajo</text>
+
+        <ellipse cx="600" cy="480" rx="250" ry="24" fill="#fff" stroke="#28a745" stroke-width="2"/>
+        <text x="600" y="484" font-size="13" font-family="Segoe UI, sans-serif" fill="#212529" text-anchor="middle">CU-10: Alerta Proactiva de Stock Agotado</text>
+
+        <ellipse cx="600" cy="540" rx="250" ry="24" fill="#fff" stroke="#28a745" stroke-width="2"/>
+        <text x="600" y="544" font-size="13" font-family="Segoe UI, sans-serif" fill="#212529" text-anchor="middle">CU-11: Detección Autónoma de Anomalías (Mermas)</text>
+
+        <!-- GRUPO COMPARTIDO (abajo): CU-05, CU-04, CU-12, CU-06 -->
+        <ellipse cx="600" cy="610" rx="250" ry="24" fill="#fff" stroke="#28a745" stroke-width="2"/>
+        <text x="600" y="614" font-size="13" font-family="Segoe UI, sans-serif" fill="#212529" text-anchor="middle">CU-05: Se vende en ambos canales al mismo tiempo</text>
+
+        <ellipse cx="600" cy="670" rx="250" ry="24" fill="#fff" stroke="#28a745" stroke-width="2"/>
+        <text x="600" y="674" font-size="13" font-family="Segoe UI, sans-serif" fill="#212529" text-anchor="middle">CU-04: Recepción de Orden Web</text>
+
+        <ellipse cx="600" cy="730" rx="250" ry="24" fill="#fff" stroke="#28a745" stroke-width="2"/>
+        <text x="600" y="734" font-size="13" font-family="Segoe UI, sans-serif" fill="#212529" text-anchor="middle">CU-12: Sincronización post venta</text>
+
+        <ellipse cx="600" cy="790" rx="250" ry="24" fill="#fff" stroke="#28a745" stroke-width="2"/>
+        <text x="600" y="794" font-size="13" font-family="Segoe UI, sans-serif" fill="#212529" text-anchor="middle">CU-06: Devolución de dinero por cancelación</text>
+
+        <!-- ============================================ -->
+        <!-- ACTORES                                       -->
+        <!-- ============================================ -->
+
+        <!-- VENDEDOR DEL STAND (izquierda, centrado en Y=340) -->
+        <g transform="translate(150, 300)">
+            <circle cx="0" cy="0" r="13" fill="none" stroke="#343a40" stroke-width="2"/>
+            <line x1="0" y1="13" x2="0" y2="50" stroke="#343a40" stroke-width="2"/>
+            <line x1="-25" y1="28" x2="25" y2="28" stroke="#343a40" stroke-width="2"/>
+            <line x1="0" y1="50" x2="-20" y2="85" stroke="#343a40" stroke-width="2"/>
+            <line x1="0" y1="50" x2="20" y2="85" stroke="#343a40" stroke-width="2"/>
+            <text x="0" y="105" font-size="14" font-weight="bold" font-family="Segoe UI, sans-serif" fill="#343a40" text-anchor="middle">Vendedor</text>
+            <text x="0" y="122" font-size="12" font-family="Segoe UI, sans-serif" fill="#343a40" text-anchor="middle">(Microempresario)</text>
+        </g>
+
+        <!-- COMPRADOR / CLIENTE WEB (izquierda abajo, centrado en Y=670) -->
+        <g transform="translate(150, 640)">
+            <circle cx="0" cy="0" r="13" fill="none" stroke="#343a40" stroke-width="2"/>
+            <line x1="0" y1="13" x2="0" y2="50" stroke="#343a40" stroke-width="2"/>
+            <line x1="-25" y1="28" x2="25" y2="28" stroke="#343a40" stroke-width="2"/>
+            <line x1="0" y1="50" x2="-20" y2="85" stroke="#343a40" stroke-width="2"/>
+            <line x1="0" y1="50" x2="20" y2="85" stroke="#343a40" stroke-width="2"/>
+            <text x="0" y="105" font-size="14" font-weight="bold" font-family="Segoe UI, sans-serif" fill="#343a40" text-anchor="middle">Comprador</text>
+            <text x="0" y="122" font-size="12" font-family="Segoe UI, sans-serif" fill="#343a40" text-anchor="middle">(Cliente Web)</text>
+        </g>
+
+        <!-- PORTAL DE VENTAS WEB (derecha, centrado en Y=700) -->
+        <g transform="translate(1060, 680)">
+            <text x="0" y="-25" font-size="12" font-style="italic" font-family="Segoe UI, sans-serif" fill="#343a40" text-anchor="middle">«system»</text>
+            <circle cx="0" cy="0" r="13" fill="none" stroke="#343a40" stroke-width="2"/>
+            <line x1="0" y1="13" x2="0" y2="50" stroke="#343a40" stroke-width="2"/>
+            <line x1="-25" y1="28" x2="25" y2="28" stroke="#343a40" stroke-width="2"/>
+            <line x1="0" y1="50" x2="-20" y2="85" stroke="#343a40" stroke-width="2"/>
+            <line x1="0" y1="50" x2="20" y2="85" stroke="#343a40" stroke-width="2"/>
+            <text x="0" y="105" font-size="14" font-weight="bold" font-family="Segoe UI, sans-serif" fill="#343a40" text-anchor="middle">Portal de</text>
+            <text x="0" y="122" font-size="14" font-weight="bold" font-family="Segoe UI, sans-serif" fill="#343a40" text-anchor="middle">Ventas Web</text>
+        </g>
+
+        <!-- ============================================ -->
+        <!-- CONEXIONES                                    -->
+        <!-- ============================================ -->
+
+        <!-- VENDEDOR → Casos de uso que INICIA (línea sólida) -->
+        <!-- Vendedor centro = (150, 340) -->
+        <line x1="155" y1="340" x2="350" y2="110" stroke="#6c757d" stroke-width="1.5"/>
+        <line x1="155" y1="340" x2="350" y2="170" stroke="#6c757d" stroke-width="1.5"/>
+        <line x1="155" y1="340" x2="350" y2="230" stroke="#6c757d" stroke-width="1.5"/>
+        <line x1="155" y1="340" x2="350" y2="290" stroke="#6c757d" stroke-width="1.5"/>
+        <line x1="155" y1="340" x2="350" y2="350" stroke="#6c757d" stroke-width="1.5"/>
+
+        <!-- VENDEDOR — Alertas que RECIBE (líneas de asociación, igual que el resto) -->
+        <line x1="350" y1="420" x2="155" y2="340" stroke="#6c757d" stroke-width="1.5"/>
+        <line x1="350" y1="480" x2="155" y2="340" stroke="#6c757d" stroke-width="1.5"/>
+        <line x1="350" y1="540" x2="155" y2="340" stroke="#6c757d" stroke-width="1.5"/>
+
+        <!-- VENDEDOR → CU-05 (venta concurrente — también participa) -->
+        <line x1="155" y1="340" x2="350" y2="610" stroke="#6c757d" stroke-width="1.5"/>
+
+        <!-- COMPRADOR → Casos de uso que INICIA -->
+        <!-- Comprador centro = (150, 680) -->
+        <line x1="155" y1="680" x2="350" y2="610" stroke="#6c757d" stroke-width="1.5"/>
+        <line x1="155" y1="680" x2="350" y2="670" stroke="#6c757d" stroke-width="1.5"/>
+
+        <!-- PORTAL DE VENTAS WEB → Casos de uso donde participa -->
+        <!-- Portal centro = (1060, 720) -->
+        <line x1="1055" y1="720" x2="850" y2="670" stroke="#6c757d" stroke-width="1.5"/>
+        <line x1="1055" y1="720" x2="850" y2="730" stroke="#6c757d" stroke-width="1.5"/>
+        <line x1="1055" y1="720" x2="850" y2="790" stroke="#6c757d" stroke-width="1.5"/>
+
+    </svg>
+</body>
+</html>

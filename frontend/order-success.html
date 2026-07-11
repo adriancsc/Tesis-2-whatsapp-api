@@ -52,16 +52,17 @@
         }
 
         .order-id {
-            font-size: 0.85rem;
-            color: #666;
+            font-size: 0.8rem;
+            color: #aaa;
             margin-bottom: 1rem;
+            letter-spacing: 0.3px;
         }
 
         .order-id span {
-            font-weight: 700;
-            color: #0099FF;
+            font-weight: 500;
+            color: #bbb;
             font-family: monospace;
-            font-size: 0.95rem;
+            font-size: 0.8rem;
         }
 
         .mas-badge {
@@ -117,7 +118,7 @@
             justify-content: space-between;
             font-size: 1.2rem;
             font-weight: 700;
-            color: #0099FF;
+            color: #2C2C2C;
             margin-top: 1rem;
             padding-top: 1rem;
             border-top: 2px solid #E0E0E0;
@@ -172,7 +173,6 @@
             <h1 class="success-title">¡Pedido confirmado!</h1>
             <p class="success-subtitle" id="customerGreeting">Gracias por tu compra. Recibirás un correo con los detalles.</p>
 
-            <!-- Badge MAS (Diferenciador de Tesis) -->
             <div class="mas-badge">
                 <h3>⚡ Sistema Multiagente MAS activado</h3>
                 <p style="font-size:0.85rem; opacity:0.9;">Tu compra activó el siguiente flujo automático:</p>
@@ -180,18 +180,20 @@
                     <div class="mas-step">✅ Webhook recibido por la Pasarela de Comunicaciones</div>
                     <div class="mas-step">✅ Agente de Sincronización (Inbound) procesó tu orden</div>
                     <div class="mas-step">✅ Agente Coordinador descontó el stock del Kárdex</div>
-                    <div class="mas-step">✅ Agente de Alertas notificó al vendedor vía WhatsApp</div>
+                    <div class="mas-step">✅ Niveles de stock verificados en tiempo real</div>
                 </div>
             </div>
 
             <!-- Detalle de la orden -->
             <div class="order-card">
-                <div class="order-id">N° de orden: <span id="orderId">—</span></div>
                 <div class="order-items-title">📦 Productos comprados</div>
                 <div id="orderItemsList">—</div>
                 <div class="order-total-row">
                     <span>Total pagado</span>
                     <span id="orderTotal">S/ 0.00</span>
+                </div>
+                <div class="order-id" style="margin-top:0.75rem; margin-bottom:0;">
+                    Referencia de seguimiento: <span id="orderId">—</span>
                 </div>
             </div>
 

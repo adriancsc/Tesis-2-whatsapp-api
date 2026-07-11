@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modelado Técnico de Infraestructura — Sistema MAS-CIS</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            background: #ffffff;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+        .page { width: 1020px; }
+        .title {
+            text-align: center;
+            font-size: 15px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 6px;
+        }
+        .subtitle {
+            text-align: center;
+            font-size: 11px;
+            color: #64748b;
+            margin-bottom: 22px;
+        }
+
+        /* ======= SECTION ======= */
+        .section {
+            margin-bottom: 22px;
+        }
+        .section-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 10px;
+            padding-bottom: 4px;
+            border-bottom: 2px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* ======= TABLE ======= */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10.5px;
+            margin-bottom: 14px;
+        }
+        thead th {
+            background: #1e293b;
+            color: #ffffff;
+            font-weight: 600;
+            padding: 7px 10px;
+            text-align: left;
+            font-size: 10px;
+            letter-spacing: 0.3px;
+        }
+        tbody td {
+            padding: 6px 10px;
+            border-bottom: 1px solid #e2e8f0;
+            color: #334155;
+            vertical-align: top;
+            line-height: 1.4;
+        }
+        tbody tr:nth-child(even) { background: #f8fafc; }
+        tbody tr:hover { background: #f1f5f9; }
+
+        .tag {
+            display: inline-block;
+            padding: 1px 6px;
+            border-radius: 3px;
+            font-size: 9px;
+            font-weight: 600;
+        }
+        .tag-green { background: #dcfce7; color: #166534; }
+        .tag-blue { background: #dbeafe; color: #1e40af; }
+        .tag-orange { background: #ffedd5; color: #9a3412; }
+        .tag-red { background: #fee2e2; color: #991b1b; }
+        .tag-purple { background: #f3e8ff; color: #6b21a8; }
+        .tag-gray { background: #f1f5f9; color: #475569; }
+
+        .code {
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 9.5px;
+            background: #f1f5f9;
+            padding: 1px 4px;
+            border-radius: 2px;
+            color: #0f172a;
+        }
+
+        /* ======= INFRA CARD ======= */
+        .infra-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+        .infra-card {
+            border: 1.5px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 12px;
+            background: #fafbfc;
+        }
+        .infra-card-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .infra-card-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: #475569;
+            padding: 2px 0;
+            border-bottom: 1px dotted #e2e8f0;
+        }
+        .infra-card-row:last-child { border-bottom: none; }
+        .infra-card-key { font-weight: 500; color: #64748b; }
+        .infra-card-val { font-weight: 600; color: #1e293b; text-align: right; }
+
+        /* ======= FLOW DIAGRAM ======= */
+        .flow-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            padding: 12px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            margin-bottom: 14px;
+        }
+        .flow-box {
+            border: 1.5px solid #94a3b8;
+            border-radius: 4px;
+            padding: 6px 10px;
+            text-align: center;
+            background: #fff;
+            min-width: 100px;
+        }
+        .flow-box-green { border-color: #22c55e; background: #f0fdf4; }
+        .flow-box-blue { border-color: #3b82f6; background: #eff6ff; }
+        .flow-box-purple { border-color: #8b5cf6; background: #f5f3ff; }
+        .flow-arrow {
+            font-size: 16px;
+            color: #94a3b8;
+            font-weight: 700;
+        }
+        .flow-label {
+            font-size: 8px;
+            color: #64748b;
+            font-style: italic;
+            margin-top: 1px;
+        }
+        .flow-nm {
+            font-size: 9.5px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        /* ======= ENV VARS TABLE ======= */
+        .env-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .env-group {
+            border: 1px solid #e2e8f0;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .env-group-title {
+            background: #f1f5f9;
+            padding: 5px 10px;
+            font-size: 10px;
+            font-weight: 700;
+            color: #475569;
+        }
+        .env-row {
+            display: flex;
+            padding: 4px 10px;
+            font-size: 9.5px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .env-key {
+            font-family: 'Consolas', monospace;
+            color: #7c3aed;
+            min-width: 200px;
+            font-size: 9px;
+        }
+        .env-val {
+            color: #475569;
+            font-size: 9px;
+        }
+
+        /* ======= UML NOTE ======= */
+        .note {
+            border: 1.5px solid #3b82f6;
+            background: #eff6ff;
+            padding: 9px 12px;
+            font-size: 9.5px;
+            color: #1e40af;
+            line-height: 1.5;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        .note b { color: #1e3a8a; }
+
+        @media print {
+            body { padding: 10px; }
+            .page { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+
+    <div class="title">Modelado Técnico de Infraestructura — Sistema MAS-CIS</div>
+    <div class="subtitle">Especificación de componentes tecnológicos, protocolos de comunicación y configuración del entorno de despliegue</div>
+
+    <!-- ========== 1. STACK TECNOLÓGICO POR CAPA ========== -->
+    <div class="section">
+        <div class="section-title">📦 1. Stack Tecnológico por Capa</div>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 140px;">Capa</th>
+                    <th style="width: 180px;">Componente</th>
+                    <th>Tecnología</th>
+                    <th style="width: 80px;">Versión</th>
+                    <th style="width: 100px;">Rol</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td rowspan="2"><span class="tag tag-gray">Presentación</span></td>
+                    <td>WhatsApp App</td>
+                    <td>WhatsApp Messenger (cliente nativo)</td>
+                    <td>—</td>
+                    <td>Interfaz vendedor</td>
+                </tr>
+                <tr>
+                    <td>Navegador Web</td>
+                    <td>HTML5 / CSS3 / JavaScript (Vanilla)</td>
+                    <td>ES6+</td>
+                    <td>Interfaz cliente</td>
+                </tr>
+                <tr>
+                    <td rowspan="2"><span class="tag tag-blue">Servicios Externos</span></td>
+                    <td>WhatsApp Business API</td>
+                    <td>Meta Cloud API (Graph API)</td>
+                    <td>v21.0</td>
+                    <td>Gateway mensajería</td>
+                </tr>
+                <tr>
+                    <td>Portal de Ventas Web</td>
+                    <td>HTML/CSS/JS estático servido por FastAPI</td>
+                    <td>—</td>
+                    <td>Tienda demo</td>
+                </tr>
+                <tr>
+                    <td rowspan="3"><span class="tag tag-green">Servidor Backend</span></td>
+                    <td>Servidor Web / API</td>
+                    <td>FastAPI + Uvicorn (ASGI)</td>
+                    <td>0.100+ / 0.27+</td>
+                    <td>Pasarela REST + Webhooks</td>
+                </tr>
+                <tr>
+                    <td>Framework MAS</td>
+                    <td>LangGraph + LangChain Core</td>
+                    <td>0.2+ / 0.3+</td>
+                    <td>Orquestador de agentes</td>
+                </tr>
+                <tr>
+                    <td>NLU / IA</td>
+                    <td>Google Gemini (AI Studio)</td>
+                    <td>gemini-2.0-flash</td>
+                    <td>Clasificación de intención</td>
+                </tr>
+                <tr>
+                    <td><span class="tag tag-red">Datos</span></td>
+                    <td>BD Kárdex Automatizado</td>
+                    <td>SQLite (prototipo) / PostgreSQL (producción)</td>
+                    <td>3.x / 15+</td>
+                    <td>SSOT de inventario</td>
+                </tr>
+                <tr>
+                    <td><span class="tag tag-purple">ORM</span></td>
+                    <td>Capa de acceso a datos</td>
+                    <td>SQLAlchemy</td>
+                    <td>2.0+</td>
+                    <td>Mapeo objeto-relacional</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ========== 2. NODOS DE INFRAESTRUCTURA ========== -->
+    <div class="section">
+        <div class="section-title">🖥️ 2. Nodos de Infraestructura</div>
+        <div class="infra-grid">
+            <div class="infra-card">
+                <div class="infra-card-title">🚀 Contenedor Backend — Railway</div>
+                <div class="infra-card-row"><span class="infra-card-key">Plataforma</span><span class="infra-card-val">Railway (PaaS)</span></div>
+                <div class="infra-card-row"><span class="infra-card-key">Entorno</span><span class="infra-card-val">Contenedor gestionado</span></div>
+                <div class="infra-card-row"><span class="infra-card-key">Runtime</span><span class="infra-card-val">Python 3.11</span></div>
+                <div class="infra-card-row"><span class="infra-card-key">Servidor ASGI</span><span class="infra-card-val">Uvicorn</span></div>
+                <div class="infra-card-row"><span class="infra-card-key">Puerto expuesto</span><span class="infra-card-val">8000 (interno) → 443 (HTTPS)</span></div>
+                <div class="infra-card-row"><span class="infra-card-key">Escalamiento</span><span class="infra-card-val">1 instancia (prototipo)</span></div>
+                <div class="infra-card-row"><span class="infra-card-key">Deploy</span><span class="infra-card-val">Git push → auto-build</span></div>
+            </div>
+            <div class="infra-card">
+                <div class="infra-card-title">🐘 Servicio de Base de Datos</div>
+                <div class="infra-card-row"><span class="infra-card-key">Motor (Prototipo)</span><span class="infra-card-val">SQLite 3.x (archivo local)</span></div>
+                <div class="infra-card-row"><span class="infra-card-key">Motor (Producción)</span><span class="infra-card-val">PostgreSQL 15+</span></div>
+                <div class="infra-card-row"><span class="infra-card-key">Archivo</span><span class="infra-card-val">mas_cis.db</span></div>
+                <div class="infra-card-row"><span class="infra-card-key">ORM</span><span class="infra-card-val">SQLAlchemy 2.0 (Core + ORM)</span></div>
+                <div class="infra-card-row"><span class="infra-card-key">Protocolo</span><span class="infra-card-val">TCP/IP (puerto 5432 en prod.)</span></div>
+                <div class="infra-card-row"><span class="infra-card-key">Rol</span><span class="infra-card-val">SSOT — Kárdex Automatizado</span></div>
+                <div class="infra-card-row"><span class="infra-card-key">Tablas principales</span><span class="infra-card-val">products, product_variants, transactions, agent_logs</span></div>
+            </div>
+            <div class="infra-card">
+                <div class="infra-card-title">💬 Infraestructura Meta (WhatsApp)</div>
+                <div class="infra-card-row"><span class="infra-card-key">Servicio</span><span class="infra-card-val">WhatsApp Business Cloud API</span></div>
+                <div class="infra-card-row"><span class="infra-card-key">API Version</span><span class="infra-card-val">v21.0</span></div>
+                <div class="infra-card-row"><span class="infra-card-key">Endpoint Base</span><span class="infra-card-val">graph.facebook.com</span></div>
+                <div class="infra-card-row"><span class="infra-card-key">Protocolo</span><span class="infra-card-val">HTTPS (TLS 1.2+)</span></div>
+                <div class="infra-card-row"><span class="infra-card-key">Autenticación</span><span class="infra-card-val">Bearer Token (larga duración)</span></div>
+                <div class="infra-card-row"><span class="infra-card-key">Webhook Entrante</span><span class="infra-card-val">/webhooks/whatsapp (POST)</span></div>
+                <div class="infra-card-row"><span class="infra-card-key">Verificación</span><span class="infra-card-val">Challenge Token (GET)</span></div>
+            </div>
+            <div class="infra-card">
+                <div class="infra-card-title">🛍️ Portal de Ventas Web (Demo)</div>
+                <div class="infra-card-row"><span class="infra-card-key">Tecnología</span><span class="infra-card-val">HTML5 + CSS3 + JS Vanilla</span></div>
+                <div class="infra-card-row"><span class="infra-card-key">Servido por</span><span class="infra-card-val">FastAPI StaticFiles</span></div>
+                <div class="infra-card-row"><span class="infra-card-key">Ruta base</span><span class="infra-card-val">/store, /checkout, /product-detail</span></div>
+                <div class="infra-card-row"><span class="infra-card-key">Webhook Compra</span><span class="infra-card-val">/webhook/ecommerce (POST)</span></div>
+                <div class="infra-card-row"><span class="infra-card-key">BD</span><span class="infra-card-val">Lee de la misma BD del MAS</span></div>
+                <div class="infra-card-row"><span class="infra-card-key">Pasarela de Pago</span><span class="infra-card-val">Izipay (simulada)</span></div>
+                <div class="infra-card-row"><span class="infra-card-key">Nota</span><span class="infra-card-val">Solo para demostración</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== 3. PROTOCOLOS DE COMUNICACIÓN ========== -->
+    <div class="section">
+        <div class="section-title">🔗 3. Protocolos y Caminos de Comunicación</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Origen</th>
+                    <th>Destino</th>
+                    <th>Protocolo</th>
+                    <th>Puerto</th>
+                    <th>Formato</th>
+                    <th>Dirección</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Dispositivo Móvil</td>
+                    <td>Servidores WhatsApp (Meta)</td>
+                    <td>HTTPS (TLS)</td>
+                    <td>443</td>
+                    <td>Propietario WhatsApp</td>
+                    <td>Bidireccional</td>
+                </tr>
+                <tr>
+                    <td>Navegador Web</td>
+                    <td>Servidor Backend (Railway)</td>
+                    <td>HTTPS</td>
+                    <td>443</td>
+                    <td>HTML / JSON</td>
+                    <td>Bidireccional</td>
+                </tr>
+                <tr>
+                    <td>Meta (WABA)</td>
+                    <td>FastAPI Gateway</td>
+                    <td>HTTPS Webhook</td>
+                    <td>443 → 8000</td>
+                    <td>JSON (Webhook Payload)</td>
+                    <td>Push (Meta → Backend)</td>
+                </tr>
+                <tr>
+                    <td>FastAPI Gateway</td>
+                    <td>Meta (WABA)</td>
+                    <td>HTTPS (Graph API)</td>
+                    <td>443</td>
+                    <td>JSON (Send Message)</td>
+                    <td>Push (Backend → Meta)</td>
+                </tr>
+                <tr>
+                    <td>Portal Web (demo)</td>
+                    <td>FastAPI Gateway</td>
+                    <td>HTTP/HTTPS Webhook</td>
+                    <td>8000</td>
+                    <td>JSON (Order Payload)</td>
+                    <td>Push (Frontend → Backend)</td>
+                </tr>
+                <tr>
+                    <td>FastAPI / LangGraph</td>
+                    <td>BD Kárdex Automatizado</td>
+                    <td>SQLAlchemy (TCP/IP)</td>
+                    <td>Archivo local (SQLite) / 5432 (PostgreSQL)</td>
+                    <td>SQL</td>
+                    <td>Bidireccional</td>
+                </tr>
+                <tr>
+                    <td>SyncAgent (Outbound)</td>
+                    <td>BD Web (externa)</td>
+                    <td>API REST (HTTPS)</td>
+                    <td>443</td>
+                    <td>JSON</td>
+                    <td>Push (simulado)</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ========== 4. FLUJO DE DESPLIEGUE ========== -->
+    <div class="section">
+        <div class="section-title">🚀 4. Flujo de Despliegue (CI/CD)</div>
+        <div class="flow-container">
+            <div class="flow-box">
+                <div class="flow-nm">Desarrollador</div>
+                <div class="flow-label">código local</div>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-box flow-box-purple">
+                <div class="flow-nm">Git Push</div>
+                <div class="flow-label">rama main</div>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-box flow-box-green">
+                <div class="flow-nm">Railway</div>
+                <div class="flow-label">auto-build</div>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-box flow-box-green">
+                <div class="flow-nm">pip install</div>
+                <div class="flow-label">requirements.txt</div>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-box flow-box-blue">
+                <div class="flow-nm">Uvicorn Start</div>
+                <div class="flow-label">puerto 8000</div>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-box" style="border-color: #16a34a; background: #dcfce7;">
+                <div class="flow-nm">✅ LIVE</div>
+                <div class="flow-label">HTTPS público</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== 5. VARIABLES DE ENTORNO ========== -->
+    <div class="section">
+        <div class="section-title">⚙️ 5. Variables de Entorno (Configuración)</div>
+        <div class="env-grid">
+            <div class="env-group">
+                <div class="env-group-title">🗄️ Base de Datos</div>
+                <div class="env-row"><span class="env-key">DB_DRIVER</span><span class="env-val">sqlite (prototipo) / postgresql</span></div>
+                <div class="env-row"><span class="env-key">DB_NAME</span><span class="env-val">mas_cis.db</span></div>
+                <div class="env-row"><span class="env-key">DB_SERVER</span><span class="env-val">localhost</span></div>
+                <div class="env-row"><span class="env-key">DB_PORT</span><span class="env-val">5432 (PostgreSQL)</span></div>
+            </div>
+            <div class="env-group">
+                <div class="env-group-title">💬 WhatsApp Business API</div>
+                <div class="env-row"><span class="env-key">WHATSAPP_API_TOKEN</span><span class="env-val">Bearer token (larga duración)</span></div>
+                <div class="env-row"><span class="env-key">WHATSAPP_PHONE_NUMBER_ID</span><span class="env-val">ID del número registrado</span></div>
+                <div class="env-row"><span class="env-key">WHATSAPP_VERIFY_TOKEN</span><span class="env-val">Token de verificación webhook</span></div>
+                <div class="env-row"><span class="env-key">WHATSAPP_API_VERSION</span><span class="env-val">v21.0</span></div>
+            </div>
+            <div class="env-group">
+                <div class="env-group-title">🌐 Aplicación</div>
+                <div class="env-row"><span class="env-key">APP_HOST</span><span class="env-val">0.0.0.0</span></div>
+                <div class="env-row"><span class="env-key">APP_PORT</span><span class="env-val">8000</span></div>
+                <div class="env-row"><span class="env-key">DEBUG_MODE</span><span class="env-val">False (producción)</span></div>
+                <div class="env-row"><span class="env-key">LOG_LEVEL</span><span class="env-val">INFO</span></div>
+            </div>
+            <div class="env-group">
+                <div class="env-group-title">🤖 Agentes MAS</div>
+                <div class="env-row"><span class="env-key">AGENT_STORE_TIMEOUT</span><span class="env-val">300 (5 min)</span></div>
+                <div class="env-row"><span class="env-key">AGENT_COORDINATOR_RETRY</span><span class="env-val">3 reintentos</span></div>
+                <div class="env-row"><span class="env-key">GEMINI_API_KEY</span><span class="env-val">Clave API de Google AI Studio</span></div>
+                <div class="env-row"><span class="env-key">GEMINI_MODEL</span><span class="env-val">gemini-2.0-flash</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== 6. ARTEFACTOS DESPLEGADOS ========== -->
+    <div class="section">
+        <div class="section-title">📂 6. Artefactos Desplegados (Archivos Clave)</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Artefacto</th>
+                    <th>Ruta</th>
+                    <th>Responsabilidad</th>
+                    <th>Capa</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><span class="tag tag-blue">main.py</span></td>
+                    <td><span class="code">src/api/main.py</span></td>
+                    <td>Aplicación FastAPI: endpoints REST, webhooks WhatsApp y E-Commerce, archivos estáticos</td>
+                    <td>API Gateway</td>
+                </tr>
+                <tr>
+                    <td><span class="tag tag-green">mas_orchestrator.py</span></td>
+                    <td><span class="code">src/agents/mas_orchestrator.py</span></td>
+                    <td>Construcción y compilación del StateGraph de LangGraph con los 4 agentes y aristas condicionales</td>
+                    <td>Framework MAS</td>
+                </tr>
+                <tr>
+                    <td><span class="tag tag-green">store_agent_node.py</span></td>
+                    <td><span class="code">src/agents/store_agent_node.py</span></td>
+                    <td>Agente de Tienda: interfaz conversacional WhatsApp, gestión de ventas/ingresos/mermas</td>
+                    <td>Agentes</td>
+                </tr>
+                <tr>
+                    <td><span class="tag tag-orange">coordinator_agent_node.py</span></td>
+                    <td><span class="code">src/agents/coordinator_agent_node.py</span></td>
+                    <td>Agente Coordinador: consolida transacciones en el kárdex, control de concurrencia</td>
+                    <td>Agentes</td>
+                </tr>
+                <tr>
+                    <td><span class="tag tag-green">sync_agent_node.py</span></td>
+                    <td><span class="code">src/agents/sync_agent_node.py</span></td>
+                    <td>Agente de Sincronización: procesa órdenes web (inbound) y sincroniza stock (outbound)</td>
+                    <td>Agentes</td>
+                </tr>
+                <tr>
+                    <td><span class="tag tag-red">alert_agent_node.py</span></td>
+                    <td><span class="code">src/agents/alert_agent_node.py</span></td>
+                    <td>Agente de Alertas: notificaciones proactivas de stock bajo y anomalías de mermas</td>
+                    <td>Agentes</td>
+                </tr>
+                <tr>
+                    <td><span class="tag tag-purple">whatsapp_gateway.py</span></td>
+                    <td><span class="code">src/gateway/whatsapp_gateway.py</span></td>
+                    <td>Integración con Meta Cloud API: envío/recepción de mensajes WhatsApp</td>
+                    <td>Gateway</td>
+                </tr>
+                <tr>
+                    <td><span class="tag tag-purple">message_router.py</span></td>
+                    <td><span class="code">src/gateway/message_router.py</span></td>
+                    <td>Enrutador: parsea webhooks WhatsApp, invoca el grafo LangGraph, envía respuesta</td>
+                    <td>Gateway</td>
+                </tr>
+                <tr>
+                    <td><span class="tag tag-gray">models.py</span></td>
+                    <td><span class="code">src/database/models.py</span></td>
+                    <td>Modelos SQLAlchemy: Product, ProductVariant, Transaction, AgentLog, ChatSession</td>
+                    <td>Datos</td>
+                </tr>
+                <tr>
+                    <td><span class="tag tag-gray">state.py</span></td>
+                    <td><span class="code">src/agents/state.py</span></td>
+                    <td>Definición de MASState (TypedDict) y función create_message (protocolo FIPA-ACL)</td>
+                    <td>Estado MAS</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ========== NOTE ========== -->
+    <div class="note">
+        <b>ℹ️ Nota Técnica:</b> En el prototipo actual, todos los componentes (FastAPI, LangGraph MAS, Gateway WhatsApp y la BD SQLite) se ejecutan dentro de un <b>único proceso Python</b> en Railway. La comunicación entre agentes es por <b>invocación en memoria</b> (mismo hilo), no por red. En una arquitectura de producción escalada, los agentes podrían distribuirse como microservicios independientes con comunicación vía colas de mensajes (Redis/RabbitMQ).
+    </div>
+
+</div>
+</body>
+</html>
