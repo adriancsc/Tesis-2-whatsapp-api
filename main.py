@@ -24,10 +24,11 @@ def main():
     system_logger.info("=" * 70)
     
     try:
+        port = settings.PORT if settings.PORT is not None else settings.APP_PORT
         uvicorn.run(
             "src.api.main:app",
             host=settings.APP_HOST,
-            port=settings.APP_PORT,
+            port=port,
             reload=settings.DEBUG_MODE,
             log_level=settings.LOG_LEVEL.lower()
         )

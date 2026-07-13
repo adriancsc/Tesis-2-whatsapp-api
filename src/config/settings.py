@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     """Configuración de la aplicación"""
     
     # Database Configuration
+    DATABASE_URL: Optional[str] = None  # Inyectado por Railway
     DB_DRIVER: str = "ODBC Driver 17 for SQL Server"
     DB_SERVER: str = "localhost"
     DB_PORT: int = 1433
@@ -28,6 +29,7 @@ class Settings(BaseSettings):
     # Application Settings
     APP_HOST: str = "0.0.0.0"
     APP_PORT: int = 8000
+    PORT: Optional[int] = None  # Railway injects this
     DEBUG_MODE: bool = True
     LOG_LEVEL: str = "INFO"
     ADMIN_PHONE: str = ""  # Número al que se enviarán alertas proactivas (ej: +51...)
@@ -50,6 +52,14 @@ class Settings(BaseSettings):
     @property
     def database_url(self) -> str:
         """Construye la URL de conexión a la base de datos"""
+        if self.DATABASE_URL:
+            # Railway inyecta 'postgresql://', SQLAlchemy necesita 'postgresql+psycopg2://'
+            if self.DATABASE_URL.startswith("postgres://"):
+                return self.DATABASE_URL.replace("postgres://", "postgresql+psycopg2://", 1)
+            if self.DATABASE_URL.startswith("postgresql://"):
+                return self.DATABASE_URL.replace("postgresql://", "postgresql+psycopg2://", 1)
+            return self.DATABASE_URL
+            
         if self.DB_DRIVER.lower() == 'sqlite':
             return "sqlite:///./mas_cis.db"
             

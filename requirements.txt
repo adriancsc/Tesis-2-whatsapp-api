@@ -9,6 +9,7 @@ python-dotenv==1.0.0
 sqlalchemy==2.0.23
 pyodbc==5.0.1
 alembic==1.12.1
+psycopg2-binary==2.9.9
 
 # WhatsApp Business API
 requests==2.31.0
