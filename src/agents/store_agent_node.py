@@ -34,6 +34,7 @@ from typing import Dict, Any
 
 from src.agents.state import MASState, create_message
 from src.database.repository import product_repository
+from src.utils.reservation_manager import reservation_manager
 from src.utils.logger import setup_logger
 
 logger = setup_logger(__name__)
@@ -101,11 +102,11 @@ def store_agent_node(state: MASState) -> Dict[str, Any]:
 
     # --- Comandos globales de reinicio ---
     if raw_text in ["menu", "menú", "salir", "cancelar", "hola"]:
-        return _reset_to_main_menu()
+        return _reset_to_main_menu(vendor_phone=state.get("vendor_phone"))
 
     # Opción "0" = volver al menú (en cualquier paso excepto ENTER_QUANTITY)
     if raw_text == "0" and current_step != "ENTER_QUANTITY":
-        return _reset_to_main_menu()
+        return _reset_to_main_menu(vendor_phone=state.get("vendor_phone"))
 
     # === MAIN_MENU ===
     if current_step == "MAIN_MENU":
@@ -136,8 +137,12 @@ def store_agent_node(state: MASState) -> Dict[str, Any]:
 # Handlers Internos (lógica por paso del FSM)
 # =============================================================================
 
-def _reset_to_main_menu() -> Dict[str, Any]:
-    """Reinicia todos los campos y muestra el menú principal"""
+def _reset_to_main_menu(vendor_phone: str = None) -> Dict[str, Any]:
+    """Reinicia todos los campos y muestra el menú principal.
+    Libera cualquier reserva temporal activa del vendedor."""
+    # Liberar reserva activa si existe (el vendedor canceló o reinició)
+    if vendor_phone:
+        reservation_manager.release(vendor_phone)
     return {
         "current_step": "MAIN_MENU",
         "action": None,
@@ -327,7 +332,12 @@ def _handle_quantity_input(raw_text: str, state: MASState) -> Dict[str, Any]:
     # Validar stock para ventas y mermas (Autonomía del agente)
     if state["action"] in ["sell", "remove"]:
         variant = product_repository.find_variant(sku=state["variant_sku"])
-        stock_available = variant.stock_total if variant else 0
+        stock_in_db = variant.stock_total if variant else 0
+        # Descontar reservas activas de OTROS vendedores para este producto
+        reserved_by_others = reservation_manager.get_reserved_quantity(
+            variant.id if variant else 0
+        )
+        stock_available = stock_in_db - reserved_by_others
 
         if quantity > stock_available:
             return {
@@ -344,6 +354,17 @@ def _handle_quantity_input(raw_text: str, state: MASState) -> Dict[str, Any]:
                 ),
                 "size_options": None,
             }
+
+    # Crear reserva temporal para ventas (protege el stock por 10 min)
+    if state["action"] == "sell":
+        variant = product_repository.find_variant(sku=state["variant_sku"])
+        if variant:
+            reservation_manager.reserve(
+                vendor_phone=state.get("vendor_phone", "unknown"),
+                variant_id=variant.id,
+                variant_sku=state["variant_sku"],
+                quantity=quantity,
+            )
 
     return {
         "current_step": "CONFIRM",
@@ -369,7 +390,8 @@ def _handle_confirmation(raw_text: str, state: MASState) -> Dict[str, Any]:
     Si cancela (2): Reinicia al menú principal.
     """
     if raw_text == "2":
-        # Cancelar operación
+        # Cancelar operación — liberar reserva temporal si existe
+        reservation_manager.release(state.get("vendor_phone", ""))
         return {
             "current_step": "MAIN_MENU",
             "action": None,
@@ -385,6 +407,36 @@ def _handle_confirmation(raw_text: str, state: MASState) -> Dict[str, Any]:
         }
 
     if raw_text == "1":
+        # Verificar que la reserva temporal no haya expirado (para ventas)
+        vendor_phone = state.get("vendor_phone", "")
+        if state["action"] == "sell":
+            active_reservation = reservation_manager.get_vendor_reservation(vendor_phone)
+            if not active_reservation:
+                # La reserva expiró (pasaron más de 10 minutos)
+                return {
+                    "current_step": "MAIN_MENU",
+                    "action": None,
+                    "product_sku": None,
+                    "product_name": None,
+                    "variant_id": None,
+                    "variant_sku": None,
+                    "size": None,
+                    "quantity": None,
+                    "requires_coordinator": False,
+                    "response_text": (
+                        "⏰ *RESERVA EXPIRADA*\n\n"
+                        "Pasaron más de 10 minutos desde que seleccionaste "
+                        "el producto. El stock fue liberado para otros canales.\n"
+                        "Por favor, inicia la venta de nuevo.\n\n"
+                        + _build_main_menu()
+                    ),
+                    "size_options": None,
+                }
+
+        # Consumir la reserva (ya no se necesita, el Coordinador ejecutará la BD)
+        if state["action"] == "sell":
+            reservation_manager.consume(vendor_phone)
+
         # Confirmar → crear mensaje request al CoordinatorAgent
         msg = create_message(
             performative="request",

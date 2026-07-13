@@ -33,6 +33,7 @@ from src.database.models import (
     AgentLog, AgentType,
 )
 from src.utils.validators import InventoryValidator
+from src.utils.reservation_manager import reservation_manager
 from src.utils.logger import setup_logger
 
 logger = setup_logger(__name__)
@@ -232,9 +233,40 @@ def _handle_stock_transaction(
     
                 # --- Ejecutar operación atómica sobre ProductVariant ---
                 previous_stock = variant.stock_physical
-    
-                if action in ("sell", "sell_web"):
-                    variant.stock_physical -= quantity
+                
+                # --- Validar stock suficiente para VENTAS (WhatsApp o Web) ---
+                if action in ["sell", "sell_web"]:
+                    # Cuántas reservas hay de ESTE producto que NO son mías
+                    # (Si era sell de WhatsApp, mi reserva ya fue consumida)
+                    reserved_by_others = reservation_manager.get_reserved_quantity(variant.id)
+                    stock_available = variant.stock_total - reserved_by_others
+
+                    if quantity > stock_available:
+                        refuse_msg = create_message(
+                            performative="refuse",
+                            sender=AGENT_NAME,
+                            receiver=sender,
+                            content={"reason": "insufficient_stock", "available": stock_available},
+                        )
+                        logger.warning(
+                            f"🎯 CoordinatorAgent REFUSE: Stock insuficiente. "
+                            f"Req: {quantity}, Disp: {stock_available} (Reservado: {reserved_by_others})"
+                        )
+                        return {
+                            "operation_success": False,
+                            "response_text": (
+                                f"❌ *STOCK INSUFICIENTE (Agente Coordinador)*\n\n"
+                                f"Producto: {variant.product.name} (Talla {variant.size})\n"
+                                f"Stock disponible: {stock_available}\n"
+                                f"Stock en reservas web/whatsapp: {reserved_by_others}\n"
+                                f"Cantidad solicitada: {quantity}\n\n"
+                                f"Escribe *menu* para volver."
+                            ),
+                            "messages": [refuse_msg],
+                        }
+                    
+                    # Validar límites atómicos de ventas
+                    is_valid, error_msg = validator.validate_sale(variant, quantity)
                     tx_type = TransactionType.SELL
                     channel = "web" if action == "sell_web" else "presencial"
                     notes = f"Venta {channel} registrada por {vendor_phone}"
