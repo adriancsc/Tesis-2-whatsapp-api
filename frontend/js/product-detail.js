@@ -101,6 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (sku) {
         loadProduct(sku);
+        setupStockSync();
     } else {
         showError('No se especificó un producto');
     }
@@ -458,3 +459,34 @@ function showError(message) {
         </div>
     `;
 }
+
+// ===== CONEXIÓN SSE PARA STOCK EN TIEMPO REAL =====
+function setupStockSync() {
+    const evtSource = new EventSource(API_BASE_URL + '/api/stream/stock');
+    
+    evtSource.onmessage = function(event) {
+        console.log('🔄 Sincronización de stock recibida:', event.data);
+        try {
+            const data = JSON.parse(event.data);
+            
+            // Actualizar currentProduct en memoria
+            if (currentProduct) {
+                const variant = currentProduct.variants.find(v => v.sku === data.variant_sku);
+                if (variant) {
+                    variant.stock_total = data.new_stock;
+                    // Si esta es la variante seleccionada, actualizar UI
+                    if (selectedVariant && selectedVariant.sku === data.variant_sku) {
+                        selectSize(data.variant_sku); // Re-render the details
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error procesando evento SSE:', error);
+        }
+    };
+    
+    evtSource.onerror = function() {
+        console.warn('⚠️ Conexión de sincronización de stock perdida. Reconectando...');
+    };
+}
+

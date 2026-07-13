@@ -25,6 +25,7 @@ from src.agents.state import MASState, create_message
 from src.database.connection import get_db
 from src.database.models import AgentLog, AgentType
 from src.utils.logger import setup_logger
+from src.utils.events import broadcast_stock_update
 
 logger = setup_logger(__name__)
 
@@ -197,9 +198,14 @@ def _push_stock_update(state: MASState) -> Dict[str, Any]:
         f"SKU={variant_sku} | Stock={stock_total}"
     )
 
-    # --- Simular push al e-commerce ---
-    # En producción: requests.put(f"{ECOMMERCE_API}/products/{variant_sku}", json={...})
-    sync_success = True  # Simulado como exitoso
+    # --- Realizar push al e-commerce mediante SSE ---
+    try:
+        broadcast_stock_update(variant_sku, stock_total)
+        sync_success = True
+    except Exception as e:
+        logger.error(f"Error sincronizando stock por SSE: {e}")
+        sync_success = False
+
     sync_timestamp = datetime.utcnow().isoformat()
 
     # --- Crear mensaje inform de sincronización ---

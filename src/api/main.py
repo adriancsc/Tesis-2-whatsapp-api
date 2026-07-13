@@ -4,7 +4,8 @@ FastAPI application con endpoints para e-commerce y administración
 """
 from fastapi import FastAPI, Depends, HTTPException, Request, Query
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, PlainTextResponse, FileResponse
+from fastapi.responses import JSONResponse, PlainTextResponse, FileResponse, StreamingResponse
+import asyncio
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 from sqlalchemy import func
@@ -28,6 +29,7 @@ from src.agents import (
     get_sync_agent_info, get_alert_agent_info,
     process_api_stock_update, mas_app, MASState
 )
+from src.utils.events import connected_clients
 from src.utils.logger import setup_logger
 
 logger = setup_logger(__name__)
@@ -176,10 +178,30 @@ async def webhook_ecommerce(request: Request):
 
         if success:
             logger.info(f"✅ Orden {order_id} procesada exitosamente por el MAS")
+            
+            # Extraer y enviar alertas proactivas al dueño (si existen)
+            from src.config import settings
+            if settings.ADMIN_PHONE:
+                alerts = [msg.get("content", {}) for msg in result.get("messages", []) if isinstance(msg, dict) and msg.get("performative") == "alert"]
+                for alert in alerts:
+                    # Enviar el texto de la alerta
+                    alert_msg = f"🚨 *ALERTA MAS-CIS*\nOrden Web: {order_id}\nProducto: {alert.get('product_name')} ({alert.get('variant_sku')})\nEstado: "
+                    if alert.get('alert_type') == 'stock_depleted':
+                        alert_msg += "¡STOCK AGOTADO!"
+                    elif alert.get('alert_type') == 'low_stock':
+                        alert_msg += f"Stock bajo (Quedan {alert.get('remaining')})"
+                    
+                    try:
+                        from src.gateway import whatsapp_gateway
+                        whatsapp_gateway.send_message(to=settings.ADMIN_PHONE, message=alert_msg)
+                        logger.info(f"📲 Alerta proactiva enviada al admin ({settings.ADMIN_PHONE})")
+                    except Exception as e:
+                        logger.error(f"Error enviando alerta proactiva por WhatsApp: {e}")
+
             return JSONResponse({
                 "status": "processed",
                 "order_id": order_id,
-                "message": result.get("response_text", "Venta web registrada exitosamente")
+                "message": "Venta web registrada exitosamente"
             }, status_code=200)
 
         logger.error(f"❌ El MAS no pudo procesar la orden {order_id}")
@@ -638,6 +660,28 @@ async def get_agents_info():
 
 
 # ============= Sync Status =============
+
+@app.get("/api/stream/stock", tags=["Sync"])
+async def stream_stock(request: Request):
+    """Server-Sent Events endpoint para actualizaciones de stock en tiempo real (CU-11)"""
+    queue = asyncio.Queue()
+    connected_clients.add(queue)
+    
+    async def event_generator():
+        try:
+            while True:
+                if await request.is_disconnected():
+                    break
+                # Esperar nueva actualización
+                data = await queue.get()
+                yield f"data: {data}\n\n"
+        except asyncio.CancelledError:
+            pass
+        finally:
+            connected_clients.remove(queue)
+            
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
+
 
 @app.get("/api/sync/status", response_model=SyncStatusResponse, tags=["Sync"])
 async def get_sync_status(db: Session = Depends(get_db_session)):

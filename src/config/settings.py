@@ -30,6 +30,7 @@ class Settings(BaseSettings):
     APP_PORT: int = 8000
     DEBUG_MODE: bool = True
     LOG_LEVEL: str = "INFO"
+    ADMIN_PHONE: str = ""  # Número al que se enviarán alertas proactivas (ej: +51...)
     
     # Agent Configuration
     AGENT_STORE_TIMEOUT: int = 300  # 5 minutos
