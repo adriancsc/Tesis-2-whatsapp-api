@@ -13,8 +13,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Cargar datos iniciales
     loadDashboardData();
 
-    // Configurar auto-refresh cada 5 segundos
-    refreshInterval = setInterval(loadDashboardData, 5000);
+    // Configurar auto-refresh cada 30 segundos
+    refreshInterval = setInterval(loadDashboardData, 30000);
 
     // Event listeners
     document.getElementById('btnRefresh').addEventListener('click', () => {
