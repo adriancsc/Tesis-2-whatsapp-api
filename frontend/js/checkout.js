@@ -4,7 +4,7 @@
  * Al confirmar pago, dispara el webhook REAL al Sistema Multiagente (MAS).
  */
 
-const API_BASE_URL = 'http://localhost:8000/api';
+const API_BASE_URL = window.location.hostname === 'localhost' ? 'http://localhost:8000/api' : `${window.location.origin}/api`;
 let paymentMethod = 'card';
 
 // ===== INICIALIZACIÓN =====

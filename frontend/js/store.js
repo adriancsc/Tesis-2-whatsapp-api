@@ -3,7 +3,7 @@
  * Maneja la carga y visualización de productos
  */
 
-const API_BASE_URL = 'http://localhost:8000/api';
+const API_BASE_URL = window.location.hostname === 'localhost' ? 'http://localhost:8000/api' : `${window.location.origin}/api`;
 let currentCategory = 'all';
 let allProducts = [];
 

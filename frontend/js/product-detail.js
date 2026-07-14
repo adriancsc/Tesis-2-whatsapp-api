@@ -3,7 +3,7 @@
  * Handles product detail display, cart management, and checkout flow
  */
 
-const API_BASE_URL = 'http://localhost:8000/api';
+const API_BASE_URL = window.location.hostname === 'localhost' ? 'http://localhost:8000/api' : `${window.location.origin}/api`;
 let currentProduct = null;
 let selectedVariant = null;
 

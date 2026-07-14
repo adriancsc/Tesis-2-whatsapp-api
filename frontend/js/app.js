@@ -3,7 +3,7 @@
  * Maneja la lógica del dashboard y actualizaciones en tiempo real
  */
 
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = window.location.hostname === 'localhost' ? 'http://localhost:8000' : window.location.origin;
 let refreshInterval = null;
 
 // ==================== Inicialización ====================
