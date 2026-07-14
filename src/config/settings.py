@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     WHATSAPP_PHONE_NUMBER_ID: str = ""
     WHATSAPP_VERIFY_TOKEN: str = ""
     WHATSAPP_BUSINESS_ACCOUNT_ID: str = ""
-    WHATSAPP_API_VERSION: str = "v21.0"
+    WHATSAPP_API_VERSION: str = "v25.0"
     WHATSAPP_API_URL: str = "https://graph.facebook.com"
     
     # Application Settings

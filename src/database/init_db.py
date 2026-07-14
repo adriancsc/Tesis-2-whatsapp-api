@@ -33,66 +33,50 @@ def seed_sample_data():
     sample_data = [
         {
             "product": {
-                "sku": "POLO-R",
-                "name": "Polo Rojo",
-                "description": "Polo de algodón color rojo",
-                "base_price": 25.00,
+                "sku": "POLO-BLANCO",
+                "name": "Polo Blanco",
+                "description": "Polo de algodón pima color blanco",
+                "base_price": 35.00,
                 "category": "Polos",
-                "color": "Rojo"
-            },
-            "variants": [
-                {
-                    "sku": "POLO-R-M",
-                    "size": "M",
-                    "stock_physical": 15,
-                    "stock_virtual": 10,
-                    "stock_total": 25
-                },
-                {
-                    "sku": "POLO-R-L",
-                    "size": "L",
-                    "stock_physical": 5,
-                    "stock_virtual": 0,
-                    "stock_total": 5
-                }
-            ]
-        },
-        {
-            "product": {
-                "sku": "JEAN-A",
-                "name": "Jean Azul",
-                "description": "Jean clásico azul",
-                "base_price": 80.00,
-                "category": "Pantalones",
-                "color": "Azul"
-            },
-            "variants": [
-                {
-                    "sku": "JEAN-A-32",
-                    "size": "32",
-                    "stock_physical": 8,
-                    "stock_virtual": 5,
-                    "stock_total": 13
-                }
-            ]
-        },
-        {
-            "product": {
-                "sku": "CAM-B",
-                "name": "Camisa Blanca",
-                "description": "Camisa formal blanca",
-                "base_price": 45.00,
-                "category": "Camisas",
                 "color": "Blanco"
             },
             "variants": [
-                {
-                    "sku": "CAM-B-L",
-                    "size": "L",
-                    "stock_physical": 12,
-                    "stock_virtual": 8,
-                    "stock_total": 20
-                }
+                {"sku": "POLO-BLANCO-S", "size": "S", "stock_physical": 10, "stock_virtual": 0, "stock_total": 10},
+                {"sku": "POLO-BLANCO-M", "size": "M", "stock_physical": 15, "stock_virtual": 0, "stock_total": 15},
+                {"sku": "POLO-BLANCO-L", "size": "L", "stock_physical": 12, "stock_virtual": 0, "stock_total": 12},
+                {"sku": "POLO-BLANCO-XL", "size": "XL", "stock_physical": 8, "stock_virtual": 0, "stock_total": 8},
+            ]
+        },
+        {
+            "product": {
+                "sku": "POLO-NEGRO",
+                "name": "Polo Negro",
+                "description": "Polo de algodón pima color negro",
+                "base_price": 35.00,
+                "category": "Polos",
+                "color": "Negro"
+            },
+            "variants": [
+                {"sku": "POLO-NEGRO-S", "size": "S", "stock_physical": 8, "stock_virtual": 0, "stock_total": 8},
+                {"sku": "POLO-NEGRO-M", "size": "M", "stock_physical": 12, "stock_virtual": 0, "stock_total": 12},
+                {"sku": "POLO-NEGRO-L", "size": "L", "stock_physical": 10, "stock_virtual": 0, "stock_total": 10},
+                {"sku": "POLO-NEGRO-XL", "size": "XL", "stock_physical": 6, "stock_virtual": 0, "stock_total": 6},
+            ]
+        },
+        {
+            "product": {
+                "sku": "POLO-AZUL",
+                "name": "Polo Azul",
+                "description": "Polo de algodón pima color azul",
+                "base_price": 35.00,
+                "category": "Polos",
+                "color": "Azul"
+            },
+            "variants": [
+                {"sku": "POLO-AZUL-S", "size": "S", "stock_physical": 7, "stock_virtual": 0, "stock_total": 7},
+                {"sku": "POLO-AZUL-M", "size": "M", "stock_physical": 14, "stock_virtual": 0, "stock_total": 14},
+                {"sku": "POLO-AZUL-L", "size": "L", "stock_physical": 9, "stock_virtual": 0, "stock_total": 9},
+                {"sku": "POLO-AZUL-XL", "size": "XL", "stock_physical": 5, "stock_virtual": 0, "stock_total": 5},
             ]
         }
     ]
@@ -101,17 +85,12 @@ def seed_sample_data():
         with get_db() as db:
             existing_count = db.query(Product).count()
             if existing_count > 0:
-                logger.warning(f"⚠️  Ya existen {existing_count} productos en la base de datos")
-                response = input("¿Deseas eliminar los datos existentes? (s/n): ")
-                if response.lower() == 's':
-                    db.query(Transaction).delete()
-                    db.query(ProductVariant).delete()
-                    db.query(Product).delete()
-                    db.commit()
-                    logger.info("Datos existentes eliminados")
-                else:
-                    logger.info("Manteniendo datos existentes")
-                    return
+                logger.warning(f"⚠️  Ya existen {existing_count} productos. Limpiando...")
+                db.query(Transaction).delete()
+                db.query(ProductVariant).delete()
+                db.query(Product).delete()
+                db.commit()
+                logger.info("Datos existentes eliminados")
             
             for item in sample_data:
                 product = Product(**item["product"])
