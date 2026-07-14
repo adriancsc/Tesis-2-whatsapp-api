@@ -595,6 +595,89 @@ async def whatsapp_webhook_alias(request: Request):
     return await whatsapp_webhook(request)
 
 
+# ============= Store Products Endpoint =============
+
+@app.get("/api/products", tags=["Store"])
+async def get_products(
+    db: Session = Depends(get_db_session),
+    category: Optional[str] = None
+):
+    """Obtener productos con variantes para la tienda online"""
+    from src.database.models import ProductVariant
+    
+    query = db.query(Product)
+    if category:
+        query = query.filter(Product.category == category)
+    
+    products = query.all()
+    
+    result = []
+    for p in products:
+        variants = [
+            {
+                "id": v.id,
+                "sku": v.sku,
+                "size": v.size,
+                "stock_physical": v.stock_physical,
+                "stock_virtual": v.stock_virtual if hasattr(v, 'stock_virtual') else 0,
+                "stock_total": v.stock_total,
+            }
+            for v in p.variants
+        ]
+        
+        result.append({
+            "id": p.id,
+            "sku": p.sku,
+            "name": p.name,
+            "description": p.description,
+            "base_price": p.base_price,
+            "category": p.category,
+            "color": getattr(p, 'color', None),
+            "image_url": getattr(p, 'image_url', None),
+            "variants": variants,
+            "total_stock": sum(v["stock_total"] for v in variants),
+        })
+    
+    return {"products": result, "total": len(result)}
+
+
+@app.get("/api/products/{sku}", tags=["Store"])
+async def get_product_by_sku(
+    sku: str,
+    db: Session = Depends(get_db_session)
+):
+    """Obtener un producto específico por SKU"""
+    product = db.query(Product).filter(Product.sku == sku).first()
+    
+    if not product:
+        raise HTTPException(status_code=404, detail="Producto no encontrado")
+    
+    variants = [
+        {
+            "id": v.id,
+            "sku": v.sku,
+            "size": v.size,
+            "stock_physical": v.stock_physical,
+            "stock_virtual": v.stock_virtual if hasattr(v, 'stock_virtual') else 0,
+            "stock_total": v.stock_total,
+        }
+        for v in product.variants
+    ]
+    
+    return {
+        "id": product.id,
+        "sku": product.sku,
+        "name": product.name,
+        "description": product.description,
+        "base_price": product.base_price,
+        "category": product.category,
+        "color": getattr(product, 'color', None),
+        "image_url": getattr(product, 'image_url', None),
+        "variants": variants,
+        "total_stock": sum(v["stock_total"] for v in variants),
+    }
+
+
 # ============= Dashboard Endpoints =============
 
 @app.get("/api/dashboard/stats", response_model=DashboardStats, tags=["Dashboard"])

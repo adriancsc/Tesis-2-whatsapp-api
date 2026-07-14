@@ -190,7 +190,8 @@ function createProductCard(product) {
 
 // ===== NAVEGAR A DETALLE DEL PRODUCTO =====
 function goToProductDetail(sku) {
-    window.location.href = `/product-detail?sku=${sku}`;
+    const basePath = window.location.pathname.includes('/static/') ? '/static/' : '/';
+    window.location.href = `${basePath}product-detail.html?sku=${sku}`;
 }
 
 // ===== FILTRAR PRODUCTOS =====
