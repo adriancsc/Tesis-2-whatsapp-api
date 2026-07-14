@@ -8,7 +8,7 @@ from pathlib import Path
 # Agregar el directorio raíz al path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from src.database.models import Base, Product, Transaction, TransactionType
+from src.database.models import Base, Product, ProductVariant, Transaction, TransactionType
 from src.database.connection import engine, get_db
 from src.utils.logger import setup_logger
 
@@ -27,81 +27,85 @@ def create_tables():
 
 
 def seed_sample_data():
-    """Inserta datos de ejemplo"""
+    """Inserta datos de ejemplo adaptados al nuevo esquema con Variantes"""
     logger.info("Insertando datos de ejemplo...")
     
-    sample_products = [
+    sample_data = [
         {
-            "sku": "POLO-R-M",
-            "name": "Polo Rojo",
-            "description": "Polo de algodón color rojo",
-            "price": 25.00,
-            "stock_physical": 15,
-            "stock_virtual": 10,
-            "stock_total": 25,
-            "category": "Polos",
-            "size": "M",
-            "color": "Rojo"
+            "product": {
+                "sku": "POLO-R",
+                "name": "Polo Rojo",
+                "description": "Polo de algodón color rojo",
+                "base_price": 25.00,
+                "category": "Polos",
+                "color": "Rojo"
+            },
+            "variants": [
+                {
+                    "sku": "POLO-R-M",
+                    "size": "M",
+                    "stock_physical": 15,
+                    "stock_virtual": 10,
+                    "stock_total": 25
+                },
+                {
+                    "sku": "POLO-R-L",
+                    "size": "L",
+                    "stock_physical": 5,
+                    "stock_virtual": 0,
+                    "stock_total": 5
+                }
+            ]
         },
         {
-            "sku": "JEAN-A-32",
-            "name": "Jean Azul",
-            "description": "Jean clásico azul",
-            "price": 80.00,
-            "stock_physical": 8,
-            "stock_virtual": 5,
-            "stock_total": 13,
-            "category": "Pantalones",
-            "size": "32",
-            "color": "Azul"
+            "product": {
+                "sku": "JEAN-A",
+                "name": "Jean Azul",
+                "description": "Jean clásico azul",
+                "base_price": 80.00,
+                "category": "Pantalones",
+                "color": "Azul"
+            },
+            "variants": [
+                {
+                    "sku": "JEAN-A-32",
+                    "size": "32",
+                    "stock_physical": 8,
+                    "stock_virtual": 5,
+                    "stock_total": 13
+                }
+            ]
         },
         {
-            "sku": "CAM-B-L",
-            "name": "Camisa Blanca",
-            "description": "Camisa formal blanca",
-            "price": 45.00,
-            "stock_physical": 12,
-            "stock_virtual": 8,
-            "stock_total": 20,
-            "category": "Camisas",
-            "size": "L",
-            "color": "Blanco"
-        },
-        {
-            "sku": "POLO-N-S",
-            "name": "Polo Negro",
-            "description": "Polo básico negro",
-            "price": 22.00,
-            "stock_physical": 20,
-            "stock_virtual": 15,
-            "stock_total": 35,
-            "category": "Polos",
-            "size": "S",
-            "color": "Negro"
-        },
-        {
-            "sku": "SHORT-G-M",
-            "name": "Short Gris",
-            "description": "Short deportivo gris",
-            "price": 35.00,
-            "stock_physical": 10,
-            "stock_virtual": 5,
-            "stock_total": 15,
-            "category": "Shorts",
-            "size": "M",
-            "color": "Gris"
+            "product": {
+                "sku": "CAM-B",
+                "name": "Camisa Blanca",
+                "description": "Camisa formal blanca",
+                "base_price": 45.00,
+                "category": "Camisas",
+                "color": "Blanco"
+            },
+            "variants": [
+                {
+                    "sku": "CAM-B-L",
+                    "size": "L",
+                    "stock_physical": 12,
+                    "stock_virtual": 8,
+                    "stock_total": 20
+                }
+            ]
         }
     ]
     
     try:
         with get_db() as db:
-            # Verificar si ya hay productos
             existing_count = db.query(Product).count()
             if existing_count > 0:
                 logger.warning(f"⚠️  Ya existen {existing_count} productos en la base de datos")
                 response = input("¿Deseas eliminar los datos existentes? (s/n): ")
                 if response.lower() == 's':
                     db.query(Transaction).delete()
+                    db.query(ProductVariant).delete()
                     db.query(Product).delete()
                     db.commit()
                     logger.info("Datos existentes eliminados")
@@ -109,16 +113,21 @@ def seed_sample_data():
                     logger.info("Manteniendo datos existentes")
                     return
             
-            # Insertar productos
-            for product_data in sample_products:
-                product = Product(**product_data)
+            for item in sample_data:
+                product = Product(**item["product"])
                 db.add(product)
+                db.flush() # Para obtener el ID del producto
+                
+                for var_data in item["variants"]:
+                    variant = ProductVariant(product_id=product.id, **var_data)
+                    db.add(variant)
             
             db.commit()
-            logger.info(f"✅ {len(sample_products)} productos de ejemplo insertados")
+            logger.info(f"✅ {len(sample_data)} productos con sus variantes insertados")
             
     except Exception as e:
         logger.error(f"❌ Error al insertar datos de ejemplo: {e}")
+        db.rollback()
         raise
 
 
