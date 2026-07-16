@@ -266,7 +266,22 @@ def _handle_stock_transaction(
                         }
                     
                     # Validar límites atómicos de ventas
-                    is_valid, error_msg = validator.validate_sale(variant, quantity)
+                    if quantity > 1000:
+                        refuse_msg = create_message(
+                            performative="refuse",
+                            sender=AGENT_NAME,
+                            receiver=sender,
+                            content={"reason": "limit_exceeded", "limit": 1000},
+                        )
+                        return {
+                            "operation_success": False,
+                            "response_text": "❌ La cantidad excede el límite máximo por transacción (1000 unidades).\n\nEscribe *menu* para volver.",
+                            "messages": [refuse_msg],
+                        }
+                    
+                    # Descontar stock físico
+                    variant.stock_physical -= quantity
+                    
                     tx_type = TransactionType.SELL
                     channel = "web" if action == "sell_web" else "presencial"
                     notes = f"Venta {channel} registrada por {vendor_phone}"
