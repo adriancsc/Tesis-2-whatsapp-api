@@ -39,7 +39,7 @@ def seed_sample_data():
                 "base_price": 35.00,
                 "category": "Polos",
                 "color": "Blanco",
-                "image_url": "/images/polo-blanco.png"
+                "image_url": "/static/images/polo-blanco.png"
             },
             "variants": [
                 {"sku": "POLO-BLANCO-S", "size": "S", "stock_physical": 10, "stock_virtual": 0, "stock_total": 10},
@@ -56,7 +56,7 @@ def seed_sample_data():
                 "base_price": 35.00,
                 "category": "Polos",
                 "color": "Negro",
-                "image_url": "/images/polo-negro.png"
+                "image_url": "/static/images/polo-negro.png"
             },
             "variants": [
                 {"sku": "POLO-NEGRO-S", "size": "S", "stock_physical": 8, "stock_virtual": 0, "stock_total": 8},
@@ -73,7 +73,7 @@ def seed_sample_data():
                 "base_price": 35.00,
                 "category": "Polos",
                 "color": "Azul",
-                "image_url": "/images/polo-azul.png"
+                "image_url": "/static/images/polo-azul.png"
             },
             "variants": [
                 {"sku": "POLO-AZUL-S", "size": "S", "stock_physical": 7, "stock_virtual": 0, "stock_total": 7},

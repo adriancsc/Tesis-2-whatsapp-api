@@ -81,11 +81,11 @@ async def fix_images():
     try:
         with get_db() as db:
             p1 = db.query(Product).filter(Product.sku == "POLO-BLANCO").first()
-            if p1: p1.image_url = "/images/polo-blanco.png"
+            if p1: p1.image_url = "/static/images/polo-blanco.png"
             p2 = db.query(Product).filter(Product.sku == "POLO-NEGRO").first()
-            if p2: p2.image_url = "/images/polo-negro.png"
+            if p2: p2.image_url = "/static/images/polo-negro.png"
             p3 = db.query(Product).filter(Product.sku == "POLO-AZUL").first()
-            if p3: p3.image_url = "/images/polo-azul.png"
+            if p3: p3.image_url = "/static/images/polo-azul.png"
             db.commit()
             return {"success": True, "message": "Images updated"}
     except Exception as e:
