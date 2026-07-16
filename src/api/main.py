@@ -78,42 +78,41 @@ async def fix_database():
     from src.database.connection import get_db
     from src.database.models import ProductVariant, Transaction, AgentLog, TransactionType
     
-    db = next(get_db())
     try:
-        # Find the corrupted variant
-        variant = db.query(ProductVariant).filter(ProductVariant.sku == "POLO-BLANCO-M").first()
-        if not variant:
-            return {"error": "Variant POLO-BLANCO-M not found"}
+        with get_db() as db:
+            # Find the corrupted variant
+            variant = db.query(ProductVariant).filter(ProductVariant.sku == "POLO-BLANCO-M").first()
+            if not variant:
+                return {"error": "Variant POLO-BLANCO-M not found"}
+                
+            old_stock = variant.stock_physical
             
-        old_stock = variant.stock_physical
-        
-        # 1. Restore exact stock (15)
-        variant.stock_physical = 15
-        variant.stock_total = 15 + variant.stock_virtual
-        
-        # 2. Delete bogus ADD transactions for this variant
-        deleted_tx = db.query(Transaction).filter(
-            Transaction.variant_id == variant.id,
-            Transaction.transaction_type == TransactionType.ADD
-        ).delete()
-        
-        # 3. Delete bogus agent logs
-        deleted_logs = db.query(AgentLog).filter(
-            AgentLog.action == "inventory_add"
-        ).delete()
-        
-        db.commit()
-        
-        return {
-            "success": True,
-            "message": "Database successfully restored",
-            "old_stock": old_stock,
-            "new_stock": variant.stock_physical,
-            "deleted_transactions": deleted_tx,
-            "deleted_logs": deleted_logs
-        }
+            # 1. Restore exact stock (15)
+            variant.stock_physical = 15
+            variant.stock_total = 15 + variant.stock_virtual
+            
+            # 2. Delete bogus ADD transactions for this variant
+            deleted_tx = db.query(Transaction).filter(
+                Transaction.variant_id == variant.id,
+                Transaction.transaction_type == TransactionType.ADD
+            ).delete()
+            
+            # 3. Delete bogus agent logs
+            deleted_logs = db.query(AgentLog).filter(
+                AgentLog.action == "inventory_add"
+            ).delete()
+            
+            db.commit()
+            
+            return {
+                "success": True,
+                "message": "Database successfully restored",
+                "old_stock": old_stock,
+                "new_stock": variant.stock_physical,
+                "deleted_transactions": deleted_tx,
+                "deleted_logs": deleted_logs
+            }
     except Exception as e:
-        db.rollback()
         return {"error": str(e)}
 
 
