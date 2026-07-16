@@ -76,7 +76,7 @@ async def root():
 async def fix_database():
     """Temporary endpoint to fix the infinite loop database corruption"""
     from src.database.connection import get_db
-    from src.database.models import ProductVariant, Transaction, AgentLog
+    from src.database.models import ProductVariant, Transaction, AgentLog, TransactionType
     
     db = next(get_db())
     try:
@@ -94,7 +94,7 @@ async def fix_database():
         # 2. Delete bogus ADD transactions for this variant
         deleted_tx = db.query(Transaction).filter(
             Transaction.variant_id == variant.id,
-            Transaction.transaction_type == "ADD"
+            Transaction.transaction_type == TransactionType.ADD
         ).delete()
         
         # 3. Delete bogus agent logs
