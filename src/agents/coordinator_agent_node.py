@@ -78,6 +78,7 @@ def coordinator_agent_node(state: MASState) -> Dict[str, Any]:
         return {
             "operation_success": False,
             "response_text": "❌ Error interno: No se recibió solicitud.\n\nEscribe *menu* para volver.",
+            "requires_coordinator": False,
         }
 
     sender = request_msg["sender"]
@@ -91,14 +92,11 @@ def coordinator_agent_node(state: MASState) -> Dict[str, Any]:
 
     # --- Despachar según el tipo de acción ---
     if action == "query":
-        return _handle_inventory_query(sender)
-
+        result = _handle_inventory_query(sender)
     elif action == "daily_summary":
-        return _handle_daily_summary(sender)
-
+        result = _handle_daily_summary(sender)
     elif action in ("sell", "sell_web", "add", "remove"):
-        return _handle_stock_transaction(state, action, content, sender)
-
+        result = _handle_stock_transaction(state, action, content, sender)
     else:
         refuse_msg = create_message(
             performative="refuse",
@@ -107,11 +105,15 @@ def coordinator_agent_node(state: MASState) -> Dict[str, Any]:
             content={"reason": "unknown_action", "action": action},
         )
         logger.warning(f"🎯 CoordinatorAgent REFUSE: Acción desconocida '{action}'")
-        return {
+        result = {
             "operation_success": False,
             "response_text": f"❌ Acción no reconocida: {action}\n\nEscribe *menu* para volver.",
             "messages": [refuse_msg],
         }
+
+    # CRITICAL FIX: Ensure the flag is cleared to prevent infinite routing loops
+    result["requires_coordinator"] = False
+    return result
 
 
 # =============================================================================
