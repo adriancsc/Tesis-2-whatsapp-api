@@ -316,6 +316,22 @@ def _handle_size_selection(raw_text: str, state: MASState) -> Dict[str, Any]:
 
 def _handle_quantity_input(raw_text: str, state: MASState) -> Dict[str, Any]:
     """Procesa y valida la cantidad ingresada"""
+    raw_text = raw_text.strip()
+    if raw_text == "0":
+        size_text, size_options = _build_size_menu(
+            state["product_sku"], state["product_name"]
+        )
+        return {
+            "current_step": "SELECT_SIZE",
+            "quantity": None,
+            "variant_id": None,
+            "variant_sku": None,
+            "size": None,
+            "requires_coordinator": False,
+            "response_text": size_text,
+            "size_options": size_options,
+        }
+
     try:
         quantity = int(raw_text)
         if quantity <= 0:
@@ -324,7 +340,7 @@ def _handle_quantity_input(raw_text: str, state: MASState) -> Dict[str, Any]:
         return {
             "requires_coordinator": False,
             "response_text": (
-                "❌ Ingresa un número válido mayor a 0.\n"
+                "❌ Ingresa un número válido mayor a 0 (o 0 para volver).\n"
                 "👉 Escribe la cantidad:"
             ),
         }
@@ -593,6 +609,7 @@ def _build_quantity_prompt(
         f"🔢 ¿Cuántas unidades {verb}?\n\n"
         f"Producto: *{product_name}* — Talla *{size}*\n"
         f"Stock disponible: {stock}\n\n"
+        f"0️⃣  ↩️ Volver\n\n"
         f"👉 Escribe la cantidad (ejemplo: 2):"
     )
 
