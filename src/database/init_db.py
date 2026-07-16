@@ -38,7 +38,8 @@ def seed_sample_data():
                 "description": "Polo de algodón pima color blanco",
                 "base_price": 35.00,
                 "category": "Polos",
-                "color": "Blanco"
+                "color": "Blanco",
+                "image_url": "/images/polo-blanco.png"
             },
             "variants": [
                 {"sku": "POLO-BLANCO-S", "size": "S", "stock_physical": 10, "stock_virtual": 0, "stock_total": 10},
@@ -54,7 +55,8 @@ def seed_sample_data():
                 "description": "Polo de algodón pima color negro",
                 "base_price": 35.00,
                 "category": "Polos",
-                "color": "Negro"
+                "color": "Negro",
+                "image_url": "/images/polo-negro.png"
             },
             "variants": [
                 {"sku": "POLO-NEGRO-S", "size": "S", "stock_physical": 8, "stock_virtual": 0, "stock_total": 8},
@@ -67,10 +69,11 @@ def seed_sample_data():
             "product": {
                 "sku": "POLO-AZUL",
                 "name": "Polo Azul",
-                "description": "Polo de algodón pima color azul",
+                "description": "Polo de algodón pima color azul marino",
                 "base_price": 35.00,
                 "category": "Polos",
-                "color": "Azul"
+                "color": "Azul",
+                "image_url": "/images/polo-azul.png"
             },
             "variants": [
                 {"sku": "POLO-AZUL-S", "size": "S", "stock_physical": 7, "stock_virtual": 0, "stock_total": 7},

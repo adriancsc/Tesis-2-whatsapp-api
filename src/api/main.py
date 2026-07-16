@@ -72,6 +72,26 @@ async def root():
     }
 
 
+@app.get("/fix-images", tags=["Health"])
+async def fix_images():
+    """Temporary endpoint to update image URLs for existing products"""
+    from src.database.connection import get_db
+    from src.database.models import Product
+    
+    try:
+        with get_db() as db:
+            p1 = db.query(Product).filter(Product.sku == "POLO-BLANCO").first()
+            if p1: p1.image_url = "/images/polo-blanco.png"
+            p2 = db.query(Product).filter(Product.sku == "POLO-NEGRO").first()
+            if p2: p2.image_url = "/images/polo-negro.png"
+            p3 = db.query(Product).filter(Product.sku == "POLO-AZUL").first()
+            if p3: p3.image_url = "/images/polo-azul.png"
+            db.commit()
+            return {"success": True, "message": "Images updated"}
+    except Exception as e:
+        return {"error": str(e)}
+
+
 @app.get("/store", tags=["Frontend"])
 async def store_page():
     """Servir página de la tienda"""
