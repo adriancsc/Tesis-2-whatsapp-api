@@ -250,7 +250,7 @@ def _push_stock_update(state: MASState) -> Dict[str, Any]:
     # Enriquecer respuesta con info de sincronización
     current_response = state.get("response_text", "")
     if sync_success and current_response:
-        sync_note = "\n🔄 _Sincronización con e-commerce completada._"
+        sync_note = "\n🔄 _Sincronización con tienda virtual completada._"
         current_response = current_response.replace(
             "Escribe *menu* para volver al menú principal.",
             f"{sync_note}\n\nEscribe *menu* para volver al menú principal."
