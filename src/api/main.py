@@ -292,9 +292,9 @@ async def get_products(
                         "stock_total": v.stock_total,
                         "price_adjustment": v.price_adjustment
                     }
-                    for v in p.variants
+                    for v in sorted(p.variants, key=lambda x: {\'S\':1, \'M\':2, \'L\':3, \'XL\':4, \'XXL\':5}.get(x.size.upper(), 99))
                 ],
-                "total_stock": sum(v.stock_total for v in p.variants),
+                "total_stock": sum(v.stock_total for v in sorted(p.variants, key=lambda x: {\'S\':1, \'M\':2, \'L\':3, \'XL\':4, \'XXL\':5}.get(x.size.upper(), 99))),
                 "created_at": p.created_at.isoformat() if p.created_at else None,
                 "updated_at": p.updated_at.isoformat() if p.updated_at else None
             }
@@ -333,9 +333,9 @@ async def get_product(sku: str, db: Session = Depends(get_db_session)):
                     "stock_total": v.stock_total,
                     "price_adjustment": v.price_adjustment
                 }
-                for v in product.variants
+                for v in sorted(product.variants, key=lambda x: {\'S\':1, \'M\':2, \'L\':3, \'XL\':4, \'XXL\':5}.get(x.size.upper(), 99))
             ],
-            "total_stock": sum(v.stock_total for v in product.variants),
+            "total_stock": sum(v.stock_total for v in sorted(product.variants, key=lambda x: {\'S\':1, \'M\':2, \'L\':3, \'XL\':4, \'XXL\':5}.get(x.size.upper(), 99))),
             "created_at": product.created_at.isoformat() if product.created_at else None,
             "updated_at": product.updated_at.isoformat() if product.updated_at else None
         }
@@ -364,9 +364,9 @@ async def get_product(sku: str, db: Session = Depends(get_db_session)):
                     "stock_total": v.stock_total,
                     "price_adjustment": v.price_adjustment
                 }
-                for v in variant.product.variants
+                for v in sorted(variant.product.variants, key=lambda x: {\'S\':1, \'M\':2, \'L\':3, \'XL\':4, \'XXL\':5}.get(x.size.upper(), 99))
             ],
-            "total_stock": sum(v.stock_total for v in variant.product.variants),
+            "total_stock": sum(v.stock_total for v in sorted(variant.product.variants, key=lambda x: {\'S\':1, \'M\':2, \'L\':3, \'XL\':4, \'XXL\':5}.get(x.size.upper(), 99))),
             "created_at": variant.product.created_at.isoformat() if variant.product.created_at else None,
             "updated_at": variant.product.updated_at.isoformat() if variant.product.updated_at else None
         }
@@ -641,7 +641,7 @@ async def get_products(
                 "stock_virtual": v.stock_virtual if hasattr(v, 'stock_virtual') else 0,
                 "stock_total": v.stock_total,
             }
-            for v in p.variants
+            for v in sorted(p.variants, key=lambda x: {\'S\':1, \'M\':2, \'L\':3, \'XL\':4, \'XXL\':5}.get(x.size.upper(), 99))
         ]
         
         result.append({
@@ -680,7 +680,7 @@ async def get_product_by_sku(
             "stock_virtual": v.stock_virtual if hasattr(v, 'stock_virtual') else 0,
             "stock_total": v.stock_total,
         }
-        for v in product.variants
+        for v in sorted(product.variants, key=lambda x: {\'S\':1, \'M\':2, \'L\':3, \'XL\':4, \'XXL\':5}.get(x.size.upper(), 99))
     ]
     
     return {
@@ -739,9 +739,9 @@ async def get_inventory_summary(
         InventoryItem(
             sku=p.sku,
             name=p.name,
-            stock_physical=sum(v.stock_physical for v in p.variants) if p.variants else 0,
+            stock_physical=sum(v.stock_physical for v in sorted(p.variants, key=lambda x: {\'S\':1, \'M\':2, \'L\':3, \'XL\':4, \'XXL\':5}.get(x.size.upper(), 99))) if p.variants else 0,
             stock_virtual=0,  # Ya no usamos stock virtual
-            stock_total=sum(v.stock_total for v in p.variants) if p.variants else 0,
+            stock_total=sum(v.stock_total for v in sorted(p.variants, key=lambda x: {\'S\':1, \'M\':2, \'L\':3, \'XL\':4, \'XXL\':5}.get(x.size.upper(), 99))) if p.variants else 0,
             price=p.base_price,
             category=p.category,
             last_updated=p.updated_at

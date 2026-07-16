@@ -577,7 +577,11 @@ def _build_size_menu(product_sku: str, product_name: str) -> tuple:
     text = f"📏 Selecciona la talla — *{product_name}*\n\n"
     size_options = {}
 
-    for i, v in enumerate(product.variants, 1):
+    # Ordenar tallas lógicamente
+    SIZE_ORDER = {"S": 1, "M": 2, "L": 3, "XL": 4, "XXL": 5}
+    sorted_variants = sorted(product.variants, key=lambda v: SIZE_ORDER.get(v.size.upper(), 99))
+
+    for i, v in enumerate(sorted_variants, 1):
         stock = v.stock_total
         if stock > 1:
             emoji = "✅"
