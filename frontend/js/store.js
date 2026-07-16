@@ -239,35 +239,34 @@ function updateProductsCount(count) {
     }
 }
 
- / /   = = = = =   C O N E X I � N   S S E   P A R A   S T O C K   E N   T I E M P O   R E A L   = = = = = 
- f u n c t i o n   s e t u p S t o c k S y n c ( )   { 
-         c o n s t   e v t S o u r c e   =   n e w   E v e n t S o u r c e ( A P I _ B A S E _ U R L   +   ' / a p i / s t r e a m / s t o c k ' ) ; 
-         
-         e v t S o u r c e . o n m e s s a g e   =   f u n c t i o n ( e v e n t )   { 
-                 c o n s o l e . l o g ( ' =��  S i n c r o n i z a c i � n   d e   s t o c k   r e c i b i d a : ' ,   e v e n t . d a t a ) ; 
-                 t r y   { 
-                         c o n s t   d a t a   =   J S O N . p a r s e ( e v e n t . d a t a ) ; 
-                         
-                         / /   A c t u a l i z a r   a l l P r o d u c t s   e n   m e m o r i a 
-                         a l l P r o d u c t s . f o r E a c h ( p   = >   { 
-                                 c o n s t   v a r i a n t   =   p . v a r i a n t s . f i n d ( v   = >   v . s k u   = = =   d a t a . v a r i a n t _ s k u ) ; 
-                                 i f   ( v a r i a n t )   { 
-                                         v a r i a n t . s t o c k _ t o t a l   =   d a t a . n e w _ s t o c k ; 
-                                         / /   R e c a l c u l a r   t o t a l _ s t o c k   d e l   p r o d u c t o   p a d r e 
-                                         p . t o t a l _ s t o c k   =   p . v a r i a n t s . r e d u c e ( ( a c c ,   c u r r )   = >   a c c   +   c u r r . s t o c k _ t o t a l ,   0 ) ; 
-                                 } 
-                         } ) ; 
-                         
-                         / /   V o l v e r   a   r e n d e r i z a r   s i   e s   n e c e s a r i o 
-                         f i l t e r P r o d u c t s ( c u r r e n t C a t e g o r y ) ; 
-                 }   c a t c h   ( e r r o r )   { 
-                         c o n s o l e . e r r o r ( ' E r r o r   p r o c e s a n d o   e v e n t o   S S E : ' ,   e r r o r ) ; 
-                 } 
-         } ; 
-         
-         e v t S o u r c e . o n e r r o r   =   f u n c t i o n ( )   { 
-                 c o n s o l e . w a r n ( ' �&�  C o n e x i � n   d e   s i n c r o n i z a c i � n   d e   s t o c k   p e r d i d a .   R e c o n e c t a n d o . . . ' ) ; 
-         } ; 
- } 
-  
- 
+
+// ===== CONEXION SSE PARA STOCK EN TIEMPO REAL =====
+function setupStockSync() {
+    const evtSource = new EventSource(API_BASE_URL + '/stream/stock');
+    
+    evtSource.onmessage = function(event) {
+        console.log('Sincronizacion de stock recibida:', event.data);
+        try {
+            const data = JSON.parse(event.data);
+            
+            // Actualizar allProducts en memoria
+            allProducts.forEach(p => {
+                const variant = p.variants.find(v => v.sku === data.variant_sku);
+                if (variant) {
+                    variant.stock_total = data.new_stock;
+                    // Recalcular total_stock del producto padre
+                    p.total_stock = p.variants.reduce((acc, curr) => acc + curr.stock_total, 0);
+                }
+            });
+            
+            // Volver a renderizar si es necesario
+            filterProducts(currentCategory);
+        } catch (error) {
+            console.error('Error procesando evento SSE:', error);
+        }
+    };
+    
+    evtSource.onerror = function() {
+        console.warn('Conexion de sincronizacion de stock perdida. Reconectando...');
+    };
+}
