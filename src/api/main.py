@@ -84,9 +84,21 @@ async def product_detail_page():
     return FileResponse("frontend/product-detail.html")
 
 
+@app.get("/product-detail.html", tags=["Frontend"])
+async def product_detail_page_html():
+    """Alias con .html para detalle del producto"""
+    return FileResponse("frontend/product-detail.html")
+
+
 @app.get("/checkout", tags=["Frontend"])
 async def checkout_page():
     """Servir página de checkout con pasarela Izipay simulada"""
+    return FileResponse("frontend/checkout.html")
+
+
+@app.get("/checkout.html", tags=["Frontend"])
+async def checkout_page_html():
+    """Alias con .html para checkout"""
     return FileResponse("frontend/checkout.html")
 
 
@@ -94,6 +106,13 @@ async def checkout_page():
 async def order_success_page():
     """Servir página de confirmación de orden exitosa"""
     return FileResponse("frontend/order-success.html")
+
+
+@app.get("/order-success.html", tags=["Frontend"])
+async def order_success_page_html():
+    """Alias con .html para orden exitosa"""
+    return FileResponse("frontend/order-success.html")
+
 
 
 # ============= Webhook E-Commerce (Izipay Simulado → MAS) =============
