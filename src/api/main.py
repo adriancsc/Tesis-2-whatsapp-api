@@ -221,7 +221,12 @@ async def webhook_ecommerce(request: Request):
             # Extraer y enviar alertas proactivas al dueño (si existen)
             from src.config import settings
             if settings.ADMIN_PHONE:
+                # Soportar múltiples números separados por coma
+                admin_phones = [p.strip() for p in settings.ADMIN_PHONE.split(",") if p.strip()]
                 alerts = [msg.get("content", {}) for msg in result.get("messages", []) if isinstance(msg, dict) and msg.get("performative") == "alert"]
+                
+                from src.gateway import whatsapp_gateway
+                
                 for alert in alerts:
                     # Enviar el texto de la alerta
                     alert_msg = f"🚨 *ALERTA MAS-CIS*\nOrden Web: {order_id}\nProducto: {alert.get('product_name')} ({alert.get('variant_sku')})\nEstado: "
@@ -230,12 +235,12 @@ async def webhook_ecommerce(request: Request):
                     elif alert.get('alert_type') == 'low_stock':
                         alert_msg += f"Stock bajo (Quedan {alert.get('remaining')})"
                     
-                    try:
-                        from src.gateway import whatsapp_gateway
-                        whatsapp_gateway.send_message(to=settings.ADMIN_PHONE, message=alert_msg)
-                        logger.info(f"📲 Alerta proactiva enviada al admin ({settings.ADMIN_PHONE})")
-                    except Exception as e:
-                        logger.error(f"Error enviando alerta proactiva por WhatsApp: {e}")
+                    for phone in admin_phones:
+                        try:
+                            whatsapp_gateway.send_message(to=phone, message=alert_msg)
+                            logger.info(f"📲 Alerta proactiva enviada al admin ({phone})")
+                        except Exception as e:
+                            logger.error(f"Error enviando alerta proactiva a {phone}: {e}")
 
             return JSONResponse({
                 "status": "processed",
