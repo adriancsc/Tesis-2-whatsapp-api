@@ -416,4 +416,15 @@
     .checkout-steps {
         display: none;
     }
+    .checkout-card {
+        padding: var(--spacing-md);
+    }
+    .cart-item {
+        flex-wrap: wrap;
+    }
+    .cart-item-price {
+        text-align: left;
+        width: 100%;
+        margin-top: 0.5rem;
+    }
 }
