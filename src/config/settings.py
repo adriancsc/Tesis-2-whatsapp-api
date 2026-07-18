@@ -45,9 +45,6 @@ class Settings(BaseSettings):
     REDIS_DB: Optional[int] = 0
     REDIS_PASSWORD: Optional[str] = None
     
-    # Google AI Studio (Gemini)
-    GEMINI_API_KEY: str = ""
-    GEMINI_MODEL: str = "gemini-2.0-flash"
     
     @property
     def database_url(self) -> str:
